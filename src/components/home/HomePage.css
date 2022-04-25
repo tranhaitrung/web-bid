@@ -1,0 +1,99 @@
+.button-load-more {
+    width: 242px;
+    margin: 40px auto 40px;
+    padding: 11px 68px;
+    border-radius: 6px;
+    background: transparent;
+    border: 1px solid #dbdbdb;
+
+}
+
+.button-load-more:hover {
+    border: 1px solid #0a9d9c;
+    color: #0a9d9c;
+}
+
+.nft-header6 {
+    font-size: 18px;
+    line-height: 24px;
+    font-weight: 600;
+    color: #5b616e;
+}
+
+.item {
+    width: calc(25% - 15px);
+    height: 460px;
+    margin-top: 25px;
+    border-radius: 8px;
+    background: transparent;
+    border: 1px solid #dbdbdb;
+    overflow: hidden;
+}
+
+.item .avatar {
+    width: 285px;
+    height: 285px;
+}
+
+.item .avatar .img {
+    object-fit: cover;
+    width: 100%;
+    height: 100%;
+}
+
+.item .content {
+    position: relative;
+    padding: 20px;
+}
+
+.item .content .price {
+    margin-top: 4px;
+}
+
+.item .content .price .text-price {
+    color: #0a0b0d;
+    font-weight: 500;
+    margin-left: 5px;
+}
+
+.nft-body-small {
+    font-size: 17px;
+    line-height: 24px;
+}
+
+.text-desc {
+    color: #5b616e;
+}
+
+.line {
+    margin: 16px 0;
+    width: 100%;
+    height: 1px;
+    background: #dbdbdb;
+}
+
+.button-bid {
+    width: 100px;
+    padding: 5px 20px;
+    border-radius: 6px;
+    background: transparent;
+    border: 1px solid #dbdbdb;
+
+}
+
+.button-bid:hover {
+    border: 1px solid #0a9d9c;
+    color: #0a9d9c;
+}
+
+.text-hyperlink {
+    color: #31b6b5;
+}
+
+.text-bold, .text-semibold {
+    font-weight: 600;
+}
+
+.cursor {
+    cursor: pointer;
+}

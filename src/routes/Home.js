@@ -5,8 +5,12 @@ import HomePage from '../components/home/HomePage';
 
 function HomeRoute() {
     return(
-        <Switch>
-        </Switch>
+        <div>
+            <Switch>
+            </Switch> 
+            
+        </div>
+
     );
 }
 export default HomeRoute;

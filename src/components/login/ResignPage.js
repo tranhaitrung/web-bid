@@ -41,6 +41,16 @@ function ResignPage() {
                     </Form.Item>
                 </Row>
                 <Form.Item
+                    name="phone"
+                    rules={[{ required: true, message: 'Hãy nhập số điện thoại' }]}
+                    label="Số điện thoại"
+                >
+                    <Input
+                    prefix={<UserOutlined className="site-form-item-icon" />}
+                    placeholder="Số điện thoại"
+                    />
+                </Form.Item>
+                <Form.Item
                     name="email"
                     rules={[{ required: true, message: 'Hãy nhập email' }]}
                     label="Email"
@@ -50,12 +60,23 @@ function ResignPage() {
                 <Form.Item
                     name="password"
                     rules={[{ required: true, message: 'Hãy nhập mật khẩu!' }]}
-                    label="Password"
+                    label="Mật khẩu"
                 >
                     <Input
                     prefix={<LockOutlined className="site-form-item-icon" />}
                     type="password"
                     placeholder="Password"
+                    />
+                </Form.Item>
+                <Form.Item
+                    name="Repassword"
+                    rules={[{ required: true, message: 'Hãy nhập lại mật khẩu!' }]}
+                    label="Nhập lại mật khẩu"
+                >
+                    <Input
+                    prefix={<LockOutlined className="site-form-item-icon" />}
+                    type="password"
+                    placeholder="Re-password"
                     />
                 </Form.Item>
                 <Form.Item>

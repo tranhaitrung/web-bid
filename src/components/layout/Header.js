@@ -28,7 +28,7 @@ function Header() {
         </Link>
       );
     }
-    if (path === '') {
+    if (path === '/') {
       return (
         <Link to={`/login`} style={{display:"flex", color:'black'}} >
           <UserOutlined style={{ fontSize: '24px' }} />
@@ -41,7 +41,7 @@ function Header() {
   }
 
     return(
-        <div>
+        <div style={{marginBottom:"20px"}}>
           <Row style={{height: "80px", padding: "0 26px"}} justify="space-around" align="middle">
             <Col span={8}>
             <Link to={``}>
