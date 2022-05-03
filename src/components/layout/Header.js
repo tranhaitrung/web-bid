@@ -63,13 +63,13 @@ function Header() {
           
           <hr style={{color:""}}/>
           
-          <Row style={{padding: "5px 26px", fontSize:"1.3em"}} justify="space-around" align="middle">
-            <Col span={3} > Trang chủ </Col>
-            <Col span={2} > Điện thoại</Col>
-            <Col span={2} > Laptop</Col>
-            <Col span={2} > Thời trang</Col>
-            <Col span={2} > Ô tô - Xe máy</Col>
-            <Col span={2} > Tổng hợp</Col>
+          {/* <Row style={{padding: "5px 26px", fontSize:"1.3em"}} justify="space-around" align="middle">
+            <Col span={3} > <Link to={'/'}  style={{color:'black'}}>Trang chủ </Link></Col>
+            <Col span={2} > <Link to={'/dien-thoai'}  style={{color:'black'}}>Điện thoại </Link></Col>
+            <Col span={2} > <Link to={'/laptop'}  style={{color:'black'}}>Laptop</Link></Col>
+            <Col span={2} > <Link to={'/thoitrang'}  style={{color:'black'}}>Thời trang </Link></Col>
+            <Col span={2} > <Link to={'/oto-xemay'}  style={{color:'black'}}>Ô tô - Xe máy</Link></Col>
+            <Col span={2} > <Link to={'/tong-hop'}  style={{color:'black'}}>Tổng hợp </Link></Col>
 
             <Col span={7} style={{display:"flex", justifyContent: "right"}}>
               <Space>
@@ -82,7 +82,7 @@ function Header() {
                 </Button>
               </Space>
             </Col>
-          </Row>
+          </Row> */}
 
         </div>
     );

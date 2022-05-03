@@ -27,7 +27,9 @@ function ResignPage() {
                         rules={[{ required: true, message: 'Hãy nhập Họ' }]}
                         label="Họ"
                     >
-                        <Input prefix={<UserOutlined className="site-form-item-icon" />} placeholder="Họ" />
+                        <Input prefix={<UserOutlined className="site-form-item-icon" />} 
+                        placeholder="Họ" 
+                        className='form-input'/>
                     </Form.Item>
                     <Form.Item
                         name="lastName"
@@ -37,6 +39,7 @@ function ResignPage() {
                         <Input
                         prefix={<UserOutlined className="site-form-item-icon" />}
                         placeholder="Tên"
+                        className='form-input'
                         />
                     </Form.Item>
                 </Row>
@@ -48,6 +51,7 @@ function ResignPage() {
                     <Input
                     prefix={<UserOutlined className="site-form-item-icon" />}
                     placeholder="Số điện thoại"
+                    className='form-input'
                     />
                 </Form.Item>
                 <Form.Item
@@ -55,7 +59,10 @@ function ResignPage() {
                     rules={[{ required: true, message: 'Hãy nhập email' }]}
                     label="Email"
                 >
-                    <Input prefix={<MailOutlined className="site-form-item-icon" />} placeholder="Email" />
+                    <Input prefix={<MailOutlined className="site-form-item-icon" />} 
+                    placeholder="Email" 
+                    className='form-input'
+                    />
                 </Form.Item>
                 <Form.Item
                     name="password"
@@ -66,6 +73,7 @@ function ResignPage() {
                     prefix={<LockOutlined className="site-form-item-icon" />}
                     type="password"
                     placeholder="Password"
+                    className='form-input'
                     />
                 </Form.Item>
                 <Form.Item
@@ -77,6 +85,7 @@ function ResignPage() {
                     prefix={<LockOutlined className="site-form-item-icon" />}
                     type="password"
                     placeholder="Re-password"
+                    className='form-input'
                     />
                 </Form.Item>
                 <Form.Item>
@@ -86,7 +95,7 @@ function ResignPage() {
                 </Form.Item>
 
                 <Form.Item>
-                    <Button type="primary" htmlType="submit" className="login-form-button">
+                    <Button type="primary" htmlType="submit" className="login-form-button" >
                     Đăng ký
                     </Button>
                     Hoặc <Link to="/login">Đăng nhập</Link>

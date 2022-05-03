@@ -1,0 +1,78 @@
+.cursor {
+    cursor: pointer;
+  }
+
+.button-detail-tb {
+    width: 40px;
+    margin: 40px auto 40px;
+    padding: 11px 68px;
+    border-radius: 6px;
+    background: transparent;
+    border: 1px solid #dbdbdb;
+
+}
+
+.button-detail-tb:hover {
+    border: 1px solid #0a9d9c;
+    color: #0a9d9c;
+}
+
+.button-bid {
+    width: 100px;
+    padding: 5px 20px;
+    border-radius: 6px;
+    background: transparent;
+    border: 1px solid #dbdbdb;
+
+}
+
+.button-bid:hover {
+    border: 1px solid #0a9d9c;
+    color: #0a9d9c;
+}
+
+.text-hyperlink {
+    color: #31b6b5;
+}
+
+.text-view-detail {
+    font-weight: 500;
+}
+
+.button-block {
+    width: 170px;
+    padding: 5px 20px;
+    border-radius: 6px;
+    background-color: #ffeded;
+    border: 1px solid #dc0000;
+    color: #dc0000;
+
+}
+
+.button-block:hover {
+    background-color: #fff;
+    border: 1px solid #dc0000;
+    color: #dc0000;
+}
+
+.button-active {
+    width: 170px;
+    padding: 5px 20px;
+    border-radius: 6px;
+    background-color: #edffee;
+    border: 1px solid #006407;
+    color: #02880b;
+
+}
+
+.button-active:hover {
+    background-color: #fff;
+    border: 1px solid #dbdbdb;
+    color: #006407;
+}
+
+.title-list-user {
+    font-size: 30px;
+    font-weight: 600px;
+    padding: "0 10px";
+}

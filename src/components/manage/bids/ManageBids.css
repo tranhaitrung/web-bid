@@ -1,0 +1,37 @@
+.button-delete {
+    width: 170px;
+    padding: 5px 20px;
+    border-radius: 6px;
+    background-color: #ffeded;
+    border: 1px solid #dc0000;
+    color: #dc0000;
+
+}
+
+.button-delete:hover {
+    background-color: #fff;
+    border: 1px solid #dc0000;
+    color: #dc0000;
+}
+
+.button-edit {
+    width: 170px;
+    padding: 5px 20px;
+    border-radius: 6px;
+    background-color: #edffee;
+    border: 1px solid #707002;
+    color: #707002;
+
+}
+
+.button-edit:hover {
+    background-color: #fff;
+    border: 1px solid #dbdbdb;
+    color: #707002;
+}
+
+.title-list-bids {
+    font-size: 30px;
+    font-weight: 600px;
+    padding: "0 10px";
+}

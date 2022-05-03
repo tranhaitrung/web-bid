@@ -14,8 +14,8 @@ function LoginPage() {
             <Row justify="center" style={{marginTop:"5em"}} >
                 <Col span={6}>
                     <Card type="inner" title="Hỗ trợ">
-                        <p>Quên mật khẩu</p>
-                        <p>Gửi lại mai xác nhận đăng kí tài khoản</p>
+                        <p className='cursor'>Quên mật khẩu</p>
+                        <p className='cursor'>Gửi lại mai xác nhận đăng kí tài khoản</p>
                     </Card>
                 </Col>
                 <Col span={1}></Col>
@@ -35,7 +35,10 @@ function LoginPage() {
                                 rules={[{ required: true, message: 'Hãy nhập email đăng nhập!' }]}
                                 label='Email'
                             >
-                                <Input prefix={<UserOutlined className="site-form-item-icon" />} placeholder="Email" />
+                                <Input prefix={<UserOutlined className="site-form-item-icon" />} 
+                                placeholder="Email"
+                                className='form-input'
+                                />
                             </Form.Item>
                             <Form.Item
                                 name="password"
@@ -46,6 +49,7 @@ function LoginPage() {
                                 prefix={<LockOutlined className="site-form-item-icon" />}
                                 type="password"
                                 placeholder="Password"
+                                className='form-input'
                                 />
                             </Form.Item>
                             <Form.Item>

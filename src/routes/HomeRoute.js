@@ -6,9 +6,8 @@ import HomePage from '../components/home/HomePage';
 function HomeRoute() {
     return(
         <div>
-            <Switch>
+            <Switch >
             </Switch> 
-            
         </div>
 
     );

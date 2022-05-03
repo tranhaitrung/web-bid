@@ -3,7 +3,16 @@
 .signup-form {
   max-width: 800px;
   width: 100%;
+  font-size: 16px;
 }
+
+.signup-form .form-input {
+  height: 40px;
+  line-height: 40px;
+  font-size: 16px;
+  border-radius: 4px;
+}
+
 .login-form-forgot {
   float: right;
 }
@@ -12,4 +21,7 @@
 }
 .login-form-button {
   width: 100%;
+  border-radius: 4px;
+  height: 40px;
+  font-size: 16px;
 }
