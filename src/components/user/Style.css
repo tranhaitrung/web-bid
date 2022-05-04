@@ -1,0 +1,43 @@
+
+.box1 {
+    display: flex;
+    margin-bottom: 20px;
+  }
+  
+  .box1 .change-avatar {
+    display: flex;
+    padding-right: 24px
+  }
+  
+  .box1 .change-avatar .left {
+    display: flex;
+  }
+  
+  .box1 .change-avatar .left img {
+    width: 80px;
+    height: 80px;
+    margin-right: 24px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+  
+  .box1 .change-avatar .left .box-text {
+    min-width: 160px;
+    margin-right: 16px;
+  }
+
+  .box1 .change-avatar .left .box-text span {
+      display: block;
+  }
+
+  .box1 .title {
+    color: #0a0b0d;
+    font-weight: 600;
+    font-size: 18px;
+  }
+
+  .box1 .discript {
+    font-weight: 400;
+    font-size: 14px;
+    color: #5b616e;
+  }

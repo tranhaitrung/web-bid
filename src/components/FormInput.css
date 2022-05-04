@@ -1,0 +1,55 @@
+.label {
+    margin-top: 24px;
+    color: #0a0b0d;
+    font-weight: 400;
+    font-size: 14px;
+}
+
+.box-input {
+    margin-top: 8px;
+    width: 540px;
+    height: 48px;
+}
+
+.el-input {
+    height: 40px;
+    line-height: 40px;
+    font-size: 16px;
+    border-radius: 4px;
+}
+
+.btn-cancel {
+    margin-right: 16px;
+    min-width: 120px;
+    background: #fff;
+    color: #3b3a39;
+}
+
+.btn-cancel:hover {
+    color: #31b6b5;
+    border: 1px solid #0a9d9c;
+}
+
+
+.btn-save {
+    color: #fff;
+    background: #31b6b5;
+    min-width: 120px;
+    border: none;
+}
+
+.btn-save:hover {
+    background: #0a9d9c;
+}
+
+.btn-action {
+    width: 100px;
+    height: 40px;
+    font-weight: 400;
+    font-size: 14px;
+    border: 1px solid #d2d0ce;
+    border-radius: 6px;
+    text-align: center;
+    line-height: 40px;
+    cursor: pointer;
+}

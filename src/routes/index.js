@@ -6,7 +6,7 @@ import HomePage from '../components/home/HomePage';
 import LoginPage from '../components/login/LoginPage';
 import ResignPage from '../components/login/ResignPage';
 import HomeManage from '../components/manage/HomeManage';
-import AccountManage from '../components/account/AccountManage';
+import UserRouter from './UserRouter';
 import AdminRouter from './AdminRouter';
 import ListAuction from '../components/auctions/ListAuction';
 import AuctionDetail from '../components/auctions/AuctionDetail';
@@ -21,7 +21,7 @@ function AppRoute() {
                 <HomeManage />
             </Route>
             <Route path={"/account"}>
-                <AccountManage />
+                <UserRouter />
             </Route>
             <Route path={"/login"} >
                 <LoginPage />
