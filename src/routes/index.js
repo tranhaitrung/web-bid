@@ -10,6 +10,7 @@ import UserRouter from './UserRouter';
 import AdminRouter from './AdminRouter';
 import ListAuction from '../components/auctions/ListAuction';
 import AuctionDetail from '../components/auctions/AuctionDetail';
+import UserAuction from '../components/auctions/UserAuction';
 
 import 'antd/dist/antd.css';
 
@@ -37,6 +38,9 @@ function AppRoute() {
             </Route>
             <Route path={"/auctions"}>
                 <ListAuction />
+            </Route>
+            <Route path={"/my-auctions"}>
+                <UserAuction/>
             </Route>
             <Route path={""}>
                 <HomePage />

@@ -1,5 +1,6 @@
 import React from "react";
 import { Col, Row, List, Comment, Avatar, Form, Button, Input, Tooltip  } from "antd";
+import { HeartOutlined } from '@ant-design/icons';
 import moment from 'moment';
 
 import './Detail.css'
@@ -156,9 +157,14 @@ class AuctionDetail extends React.Component {
                         </div>
                     </div>
                     <div className="detail-right m1-auto">
-                        <div className="detail-heading">
+                        <Row className="detail-heading" justify='space-between'>
                             <div className="auction-title">Cuộc đấu giá số 009</div>
-                        </div>
+
+                            <div style={{fontSize:'20px'}}>
+                              <HeartOutlined className='cursor' />
+                              <span style={{marginLeft:'5px'}}>1</span>
+                          </div>
+                        </Row>
                         <div className="item-title">
                             Xe máy Wave alpha
                         </div>

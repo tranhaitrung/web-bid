@@ -10,25 +10,25 @@ const columns = [
         title: 'ID',
         dataIndex: 'id',
         key: 'id',
-        columnWidth: '20%',
+        width: '10%',
     },
   {
     title: 'Số lượng',
     dataIndex: 'quantity',
     key: 'quantity',
-    columnWidth: '25%',
+    width: '25%',
   },
   {
     title: 'Giá',
     dataIndex: 'price',
     key: 'price',
-    columnWidth: '25%',
+    width: '25%',
   },
   {
     title: 'Chỉnh sửa',
     dataIndex: 'edit',
     key: 'edit',
-    columnWidth: "15%",
+    width: "15%",
     render: (text, record) => (
         <span onClick={()=> console.log(record)} className="button-edit cursor">
           {"Chỉnh sửa"}
@@ -39,7 +39,7 @@ const columns = [
     title: 'Xóa',
     key: 'delete',
     dataIndex: 'delete',
-    columnWidth: '15%',
+    width: '15%',
     render: (text, record) => (
         <button onClick={()=> console.log(record)} className={"button-delete cursor"}>
         {"Xóa"}

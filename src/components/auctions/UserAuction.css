@@ -1,0 +1,99 @@
+.header-auction-user {
+    max-width: 1200px;
+    width: 100%;
+}
+
+.header-auction-user .banner {
+    height: 324px;
+    position: relative;
+    margin-bottom: 16px;
+}
+
+.header-auction-user .banner .banner-img {
+    width: 1200px;
+    height: 260px;
+    object-fit: cover;
+    border-radius: 8px;
+}
+
+.header-auction-user .banner .banner-img img {
+    object-fit: cover;
+}
+
+.wrap-media {
+    width: 100%;
+    height: 100%;
+}
+
+.wrap-media .content-media {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.header-auction-user .banner .banner-avatar {
+    background: #fff;
+    position: absolute;
+    left: 50%;
+    bottom: 0;
+    transform: translateX(-50%);
+    width: 128px;
+    height: 128px;
+    border: 4px solid #fff;
+    border-radius: 100%;
+}
+
+.header-auction-user .banner .banner-avatar img {
+    border-radius: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.d-block {
+    display: block;
+}
+
+.nft-header3 {
+    font-size: 40px;
+    line-height: 56px;
+}
+
+.text-bold600 {
+    font-weight: 600;
+}
+
+.tabs {
+    border-bottom: 1px solid #dbdbdb;
+}
+
+.tabs .tab-active {
+    font-weight: 600;
+    background: -webkit-linear-gradient(0deg,#31b6b5 40.29%,#31b6b5 97.93%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.tab-item {
+    padding: 16px 12px;
+    position: relative;
+}
+
+.nft-header6 {
+    font-size: 20px;
+    line-height: 24px;
+}
+
+.cursor {
+    cursor: pointer;
+}
+
+.text-desc {
+    color: #5b616e;
+    font-weight: 400;
+}
+
+.text-desc:hover {
+    color: #0a9d9c;
+}

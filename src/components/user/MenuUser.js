@@ -12,7 +12,7 @@ const menu = [
   { icon: <UserOutlined/>, label: 'Thông tin tài khoản', path: '/account/info' },
   { icon: <KeyOutlined/>, label: 'Đổi mật khẩu', path: '/account/change-pass' },
   { icon: <ShoppingCartOutlined/>, label: 'Mua gói đấu giá', path: '/account/buy-bid-package' },
-  { icon: <ProfileOutlined/>, label: 'Đấu giá của tôi', path: '/account/my-auctions' },
+  { icon: <ProfileOutlined/>, label: 'Tạo cuộc đấu giá', path: '/account/create-auctions' },
 ];
 
 class MenuUser extends React.Component {

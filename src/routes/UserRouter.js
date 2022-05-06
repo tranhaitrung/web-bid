@@ -29,7 +29,7 @@ function UserRouter() {
             exact
             path={`${path}/buy-bid-package`}
           />
-          <Route component={UserAuctions} exact path={`${path}/my-auctions`} />
+          <Route component={UserAuctions} exact path={`${path}/create-auctions`} />
         </Switch>
       </Suspense>
     </MenuUser>

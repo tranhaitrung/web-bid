@@ -1,13 +1,82 @@
 import React from 'react';
-import { Col, Row, Image, Input, Space, Button, Divider } from "antd";
-import { SearchOutlined, UserOutlined } from '@ant-design/icons';
+import { Col, Row, Image, Badge, Avatar, Dropdown, Menu} from "antd";
+import { BellOutlined , UserOutlined } from '@ant-design/icons';
 import { Link } from "react-router-dom";
-import Category from '../category/Category';
 
-function Header() {
-  const path = window.location.pathname;
+import './Header.css';
 
-  const renderLinkLogin = () => {
+const dropDownNotify = (
+  <Menu
+    items={[
+      {
+        label: <a href="https://www.antgroup.com">1st menu item</a>,
+        key: '0',
+      },
+      {
+        label: <a href="https://www.aliyun.com">2nd menu item</a>,
+        key: '1',
+      },
+      {
+        label: '3rd menu item',
+        key: '2',
+      },
+      {
+        label: '4rd menu item',
+        key: '3',
+      },
+      {
+        label: '5rd menu item',
+        key: '4',
+      },
+    ]}
+  />
+);
+
+
+const path = window.location.pathname;
+
+class Header extends React.Component {
+
+  constructor(props) {
+    super(props);
+    this.state={
+      token: 'ahkj',
+      avatar: localStorage.getItem("avatar"),
+      username: localStorage.getItem("username")
+    }
+  }
+
+  logout() {
+    localStorage.setItem("token", null);
+    this.setState({
+      token: null
+    })
+  }
+
+  dropDownAvatar = (
+    <Menu
+      items={[
+        {
+          label: <Link to={`/account`}>taikhoan@gmail.com</Link>,
+          key: '0',
+        },
+  
+        {
+          type: 'divider',
+        },
+        {
+          label: <Link to={`/account`}>Thông tin tài khoản</Link>,
+          key: '1',
+        },
+        {
+          label: <Link to={`/login`} onClick={this.logout()}>Đăng xuất</Link>,
+          key: '3',
+        },
+      ]}
+    />
+  );
+
+  renderNotLogin = () => {
     if (path === '/login') {
       return (
         <Link to={`/register`} style={{display:"flex", color:'black'}} >
@@ -18,7 +87,7 @@ function Header() {
         </Link>
       );
     }
-    if (path === '/register') {
+    else if (path === '/register') {
       return (
         <Link to={`/login`} style={{display:"flex", color:'black'}} >
           <UserOutlined style={{ fontSize: '24px' }} />
@@ -28,7 +97,7 @@ function Header() {
         </Link>
       );
     }
-    if (path === '/') {
+    else if (this.state.token == null) {
       return (
         <Link to={`/login`} style={{display:"flex", color:'black'}} >
           <UserOutlined style={{ fontSize: '24px' }} />
@@ -36,10 +105,29 @@ function Header() {
             Đăng nhập
           </Col>
         </Link>
+      );
+    }
+    else if (this.state.token != null) {
+      return (
+        <div className='avatar-header'>
+          <Dropdown overlay={this.dropDownAvatar} trigger={['click']} placement="bottom">
+            <img src="https://s3.ap-southeast-1.amazonaws.com/cleverme-production/blockchain/AVATAR/AVATAR_cake_584494726_1650685683493.jpg" alt="ảnh đại điện"  />
+          </Dropdown>
+        </div>
       );
     }
   }
 
+  renderLogined() {
+    return (
+      <div className='avatar-header'>
+        <Dropdown overlay={this.dropDownAvatar} trigger={['click']} placement="bottom">
+          <img src="https://s3.ap-southeast-1.amazonaws.com/cleverme-production/blockchain/AVATAR/AVATAR_cake_584494726_1650685683493.jpg" alt="ảnh đại điện"  />
+        </Dropdown>
+      </div>
+    );
+  }
+    render(){
     return(
         <div style={{marginBottom:"20px"}}>
           <Row style={{height: "80px", padding: "0 26px"}} justify="space-around" align="middle">
@@ -54,8 +142,25 @@ function Header() {
             
             </Col>
             <Col span={8} offset={8} >
-                <Row align="middle" style={{display:"flex", justifyContent: "right"}}>
-                  {renderLinkLogin()}
+                <Row align="middle" style={{display:"flex", justifyContent: "right", width:'100%'}}>
+                  <Col span={3}>
+                    <Dropdown overlay={dropDownNotify} trigger={['click']} placement="bottom">
+                      <Badge count={5} size='small'>
+                        <BellOutlined style={{fontSize:'22px'}} className='notify' />
+                      </Badge>
+                    </Dropdown> 
+                  </Col>
+                  <Col span={8}>
+                    <Link to={`/my-auctions`}><span className='my-auction'>Đấu giá của tôi</span></Link> 
+                  </Col>
+                  <div className='line-head'></div>
+                  <Col span={8}>
+                    {
+                      this.state.token === null 
+                      ? this.renderLinkLogin()
+                      : this.renderLogined()
+                    }
+                  </Col>
                 </Row>
                 
             </Col>
@@ -86,6 +191,7 @@ function Header() {
 
         </div>
     );
+  }
 }
 
 export default Header;

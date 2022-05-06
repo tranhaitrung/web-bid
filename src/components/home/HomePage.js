@@ -195,7 +195,7 @@ function HomePage() {
                             }
                         </Row>
                         <Row justify="center" style={{width:'1200px'}}>
-                            <Link to={`/marketplace`} onClick={jumpToHead}>
+                            <Link to={`/auctions`} onClick={jumpToHead}>
                                 <button className="button-load-more nft-header6">
                                     Xem thêm
                                 </button>
