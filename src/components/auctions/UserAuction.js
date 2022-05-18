@@ -1,14 +1,12 @@
-import { Row, Col, Input, Cascader, Select, Pagination  } from "antd";
+import { Row, Col, Input, Cascader, Select, Pagination, Empty, message  } from "antd";
 import React from "react";
-import Ending from "../home/components/Ending";
-import OnAuction from "../home/components/OnAuction";
-import UpComing from "../home/components/UpComing";
+import AuctionComponent from "../home/components/AuctionComponent";
 import { SearchOutlined } from '@ant-design/icons';
+import apis from "../../redux/apis";
+import { useHistory } from "react-router";
 
 import './Filter.css';
 import './UserAuction.css';
-
-const { Option } = Select;
 
 const optionAuctionStatus = [
     {
@@ -37,18 +35,6 @@ const optionAuctionStatus = [
     },
   ];
 
-
-  const optionCategories = [
-    {
-        value: '1',
-        label: 'Nhà đất',
-    },
-    {
-        value: '2',
-        label: 'Ô tô - Xe máy',
-    },
-    ];
-
 class UserAuction extends React.Component {
 
     constructor(props){
@@ -56,6 +42,7 @@ class UserAuction extends React.Component {
         this.state= {
             tabActive: 'MINE'
         };
+        this.initData();
     }
 
     activeStyle = 'tab-item nft-header6 cursor text-desc tab-active';
@@ -65,13 +52,69 @@ class UserAuction extends React.Component {
     console.log(value);
     }
 
-    listAuction() {
-        var auctions = [];
-        for (var i = 0; i < 16 ; i++) {
-            auctions.push(<OnAuction/>)
-        }
-        return auctions;
+    initData() {
+
+        this.listAuctionOfUser();
+        
+        apis.categories
+            .listCategory()
+            .then(res => {
+                let data = res.data.data;
+                var cates = [];
+                for (var i = 0; i < data.length; i++) {
+                    var tmp = {
+                        value: data[i].category_id,
+                        label: data[i].name
+                    }
+                    cates.push(tmp);
+                    
+                }
+                this.setState({
+                    listCategory: cates
+                });
+            })
     }
+
+    listAuctionOfUser = () => {
+        this.setState({tabActive:'MINE'});
+        apis.auction
+            .listAcutionByUser(1,1,12)
+            .then((res) => {
+                let data = res.data.data;
+                if (res.data.code === 1000) {
+                    this.setState({
+                        listAuction: data.auctions,
+                        totalAuction: data.total
+                    })
+                } 
+                else if (res.data.code === 1004) {
+                    message.error("Bạn cần đăng nhập")
+                }
+                
+            })
+    }
+
+    listAcutionUserLiked = () => {
+        this.setState({tabActive:'LIKE'});
+
+        apis.auction
+            .listAuctionUserLiked(1,12)
+            .then((res) => {
+                let data = res.data.data;
+                
+                if (res.data.code === 1000) {
+                    this.setState({
+                        listAuction: data.auctions,
+                        totalAuction: data.total
+                    })
+                } 
+                else if (res.data.code === 1004) {
+                    message.error("Bạn cần đăng nhập")
+                }
+            })
+    }
+
+
 
     render(){
         return(
@@ -114,16 +157,12 @@ class UserAuction extends React.Component {
                 <Row className="tabs" style={{width:'100%', marginBottom:"40px"}} justify='center'>
                     <div className={this.state.tabActive ==='MINE' ? this.activeStyle : this.inactiveStyle}>
                         <span
-                            onClick={()=>{
-                                this.setState({tabActive:'MINE'})
-                            }}
+                            onClick={this.listAuctionOfUser}
                         >Đấu giá của tôi</span>
                     </div>
                     <div className={this.state.tabActive ==='LIKE' ? this.activeStyle : this.inactiveStyle}>
                         <span
-                            onClick={()=>{
-                                this.setState({tabActive:'LIKE'})
-                            }}
+                            onClick={this.listAcutionUserLiked}
                         >Đấu giá đã thích</span>
                     </div>
                 </Row>
@@ -147,23 +186,34 @@ class UserAuction extends React.Component {
                     style={{ 
                         marginRight: '20px',
                     }}
-                    className='form-filter'
+                    dropdownMenuColumnStyle= {{width: "170px"}}
                     />
 
 
                     <Cascader 
                     size="large" 
-                    options={optionCategories} 
+                    options={this.state.listCategory} 
                     onChange={this.onChange} 
                     placeholder="Danh mục" 
                     style={{borderRadius:'8px'}}
+                    dropdownMenuColumnStyle= {{width: "170px"}}
+                    
                     />
                 </Row>
 
                 
                 <Row style={{width:'1200px'}}>
                     {
-                        this.listAuction()
+                        this.state.totalAuction > 0 
+                        ?
+                        this.state.listAuction?.map((auction) => (
+                            <AuctionComponent auction={auction}></AuctionComponent>
+                        ))
+                        :
+                        <Row justify="center" style={{width: '100%'}}>
+                           <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} /> 
+                        </Row>
+                        
                     }
                 </Row>
                 <Row justify="end" style={{margin:'30px 15px'}}>
@@ -173,7 +223,8 @@ class UserAuction extends React.Component {
                     onChange={(page, limit)=> {console.log(page+","+limit)}}
                     defaultCurrent={1}
                     pageSizeOptions={[12,24,48,96]}
-                    total={400}
+                    total={this.state.totalAuction}
+                    defaultPageSize={12}
                     
                     />
                 </Row>

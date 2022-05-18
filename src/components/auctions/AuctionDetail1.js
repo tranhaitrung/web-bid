@@ -1,10 +1,9 @@
 import React, { useEffect, useState }  from "react";
-import { Col, Row, List, Comment, Avatar, Form, Button, Input, Empty, Modal, Cascader, DatePicker } from "antd";
+import { Col, Row, List, Comment, Avatar, Form, Button, Input, Tooltip, Modal, Cascader, DatePicker } from "antd";
 import { HeartOutlined, MoreOutlined } from '@ant-design/icons';
 import moment from 'moment';
 import NumberFormat from 'react-number-format';
 import { Route, useParams } from "react-router-dom";
-import { useSelector } from "react-redux";
 // import { Link } from 'react-router-dom';
 
 import apis from "../../redux/apis";
@@ -20,9 +19,67 @@ function onChange(dates, dateStrings) {
   console.log('From: ', dates[0], ', to: ', dates[1]);
   console.log('From: ', dateStrings[0], ', to: ', dateStrings[1]);
 }
+
+const data = [
+    {
+      image: 'http://lh.rdcpix.com/c6a31b4713ea02f6e8d695329dcffaeel-f1004866407r.jpg',
+    },
+    {
+      image: 'https://lh.rdcpix.com/e3f1ae362359073740b51f1c8453b5f4l-f31556016r.jpg',
+    },
+    {
+      image: 'https://lh.rdcpix.com/8cacec82343becb9851d61f4f30ebaabl-f3217572169r.jpg',
+    },
+    {
+      image: 'https://lh.rdcpix.com/f49423148aa4f4f5d9f5f3a626d10562l-f3854755438r.jpg',
+    },
+  ];
+
+  const dataComments = [
+    {
+      author: 'Han Solo',
+      avatar: 'https://joeschmoe.io/api/v1/random',
+      content: (
+        <p>
+          We supply a series of design principles, practical patterns and high quality design
+          resources (Sketch and Axure), to help people create their product prototypes beautifully and
+          efficiently.
+        </p>
+      ),
+      datetime: (
+        <Tooltip title={moment().subtract(1, 'days').format('YYYY-MM-DD HH:mm:ss')}>
+          <span>{moment().subtract(1, 'days').fromNow()}</span>
+        </Tooltip>
+      ),
+    },
+    {
+      author: 'Han Solo',
+      avatar: 'https://joeschmoe.io/api/v1/random',
+      content: (
+        <p>
+          We supply a series of design principles, practical patterns and high quality design
+          resources (Sketch and Axure), to help people create their product prototypes beautifully and
+          efficiently.
+        </p>
+      ),
+      datetime: (
+        <Tooltip title={moment().subtract(2, 'days').format('YYYY-MM-DD HH:mm:ss')}>
+          <span>{moment().subtract(2, 'days').fromNow()}</span>
+        </Tooltip>
+      ),
+    },
+  ];
   
   const { TextArea } = Input;
-
+  
+  const CommentList = ({ comments }) => (
+    <List
+      dataSource={comments}
+      header={`${comments.length} ${comments.length > 1 ? 'replies' : 'reply'}`}
+      itemLayout="horizontal"
+      renderItem={props => <Comment {...props} />}
+    />
+  );
   
   const Editor = ({ onChange, onSubmit, submitting, value }) => (
     <>
@@ -54,9 +111,6 @@ function AuctionDetail() {
   const [popUpEditAuction, setPopUpEditAuction] = useState(false);
   const [comments, setComments] = useState([]);
   const [totalComments, setTotalComment] = useState();
-  const userId = useSelector((state) => state.auth.userId);
-  const avatar = useSelector((state) => state.auth.avatar);
-  const [listBid, setListBid] = useState([]);
 
   const {auctionId} = useParams();
 
@@ -82,13 +136,6 @@ function AuctionDetail() {
         setSeller(seller);
         setMaxBid(maxBid);
 
-      })
-
-      apis.auction
-      .listBid(auctionId, 1, 10)
-      .then(res => {
-        var data = res.data.data;
-        setListBid(data.bids)
       })
 
       apis.auction.totalLikeAuction(auctionId)
@@ -329,34 +376,52 @@ function AuctionDetail() {
                             <th className="col1 title-head" >Người đấu giá</th>
                             <th className="col2 title-head">Giá</th>
                         </tr>
-
-                        {
-                          listBid.length > 0 
-                          ?
-                          listBid?.map((bid) => (
-                            <tr className="w-100 row">
-                              <td className="col1">
-                                  <div className="wrap-media">
-                                      <div className="content-media">
-                                          <img src={bid.user_avatar} alt="avatar bidder" />
-                                      </div>
-                                  </div>
-                                  <div><span>{ bid.user_name }</span></div>
-                              </td>
-                              <td className="col2">
-                                  <div>
-                                      <span><NumberFormat value={bid.price} displayType={'text'} thousandSeparator={true} /></span>
-                                  </div>
-                              </td>
-                            </tr>
-                          ))
-
-                          :
-                          <Row justify="center" style={{width: '100%'}}>
-                            <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} /> 
-                          </Row>
-                        }
-
+                        <tr className="w-100 row">
+                            <td className="col1">
+                                <div className="wrap-media">
+                                    <div className="content-media">
+                                        <img src="https://s3.cloud.cmctelecom.vn/bework-production/blockchain/AVATAR/AVATAR_chup-anh-dep-anh-sang-min_500647789_1650107731398.jpeg" alt="avatar bidder" />
+                                    </div>
+                                </div>
+                                <div><span>Nguyễn Ngọc Ngạn</span></div>
+                            </td>
+                            <td className="col2">
+                                <div>
+                                    <span>1,000,000</span>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr className="w-100 row">
+                            <td className="col1">
+                                <div className="wrap-media">
+                                    <div className="content-media">
+                                        <img src="https://s3.cloud.cmctelecom.vn/bework-production/blockchain/AVATAR/AVATAR_chup-anh-dep-anh-sang-min_500647789_1650107731398.jpeg" alt="avatar bidder" />
+                                    </div>
+                                </div>
+                                <div><span>Nguyễn Ngọc Ngạn</span></div>
+                            </td>
+                            <td className="col2">
+                                <div>
+                                    <span>1,000,000</span>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr className="w-100 row">
+                            <td className="col1">
+                                <div className="wrap-media">
+                                    <div className="content-media">
+                                        <img src="https://s3.cloud.cmctelecom.vn/bework-production/blockchain/AVATAR/AVATAR_chup-anh-dep-anh-sang-min_500647789_1650107731398.jpeg" alt="avatar bidder" />
+                                    </div>
+                                </div>
+                                <div><span>Nguyễn Ngọc Ngạn</span></div>
+                            </td>
+                            <td className="col2">
+                                <div>
+                                    <span>1,000,000</span>
+                                </div>
+                            </td>
+                        </tr>
+    
                     </table>
                 </Row>
                 :
@@ -364,7 +429,7 @@ function AuctionDetail() {
                     {/* {comments.length > 0 && <CommentList comments={comments} />} */}
                     <Row style={{width: "100%"}}>
                       <Comment
-                      avatar={<Avatar src={avatar} alt="Han Solo" />}
+                      avatar={<Avatar src="https://joeschmoe.io/api/v1/random" alt="Han Solo" />}
                       content={
                           <Editor
                           onChange={handleChange}

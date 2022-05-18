@@ -1,7 +1,7 @@
 import styled from "styled-components";
 import { Layout } from "antd";
 
-const { Header, Content, Footer, Sider } = Layout;
+const { Header, Content, Sider } = Layout;
 export const SiderWrapper = styled(Sider)`
   &.ant-layout-sider {
     max-width: 300px !important;

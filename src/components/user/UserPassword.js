@@ -3,13 +3,26 @@ import React from "react";
 import { Form, Input, Button, Checkbox } from 'antd';
 import { LockOutlined } from '@ant-design/icons';
 import { Link } from 'react-router-dom';
+import { useDispatch, useSelector } from "react-redux";
+import { useHistory } from "react-router";
+import { changePass } from "../../redux/actions/auth";
 
 import '../FormInput.css';
 import './Style.css';
 
 function UserPassword() {
+
+    const dispacth = useDispatch();
+    const history = useHistory();
+    const { isLoading } = useSelector((state) => state.auth);
+
     const onFinish = (values) => {
-        console.log('Received values of form: ', values);
+        const body = {
+            old_pass: values.old_password,
+            new_pass: values.new_password,
+            re_pass: values.Repassword
+        }
+        dispacth(changePass(body, history));
     };
     return (
         <Col style={{width:'100%'}}>
@@ -29,7 +42,7 @@ function UserPassword() {
                     style={{width:'540px'}}
                     >
                     <Form.Item
-                        name="old-password"
+                        name="old_password"
                         rules={[{ required: true, message: 'Hãy nhập mật khẩu!' }]}
                         label="Mật khẩu"
                     >
@@ -41,7 +54,7 @@ function UserPassword() {
                         />
                     </Form.Item>
                     <Form.Item
-                        name="new-password"
+                        name="new_password"
                         rules={[{ required: true, message: 'Hãy nhập mật khẩu!' }]}
                         label="Mật khẩu mới"
                     >
@@ -68,7 +81,7 @@ function UserPassword() {
                     <Form.Item>
                         <Row>
                             <button className="btn-action btn-cancel">Hủy</button>
-                            <button className="btn-save btn-action ">Đổi mật khẩu</button>
+                            <button className="btn-save btn-action " isLoading={isLoading}>Đổi mật khẩu</button>
                         </Row>
                     </Form.Item>
                     </Form>

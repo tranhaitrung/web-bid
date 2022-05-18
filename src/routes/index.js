@@ -1,6 +1,6 @@
 import { Header } from 'antd/lib/layout/layout';
 import React from 'react';
-import { Route } from 'react-router-dom';
+import { Route, useParams } from 'react-router-dom';
 import {Switch} from 'react-router-dom';
 import HomePage from '../components/home/HomePage';
 import LoginPage from '../components/login/LoginPage';
@@ -33,7 +33,7 @@ function AppRoute() {
             <Route path={"/admin"}>
                 <AdminRouter />
             </Route>
-            <Route path={"/auctions/detail/1"}>
+            <Route path={"/auctions/detail/:auctionId"}>
                 <AuctionDetail />
             </Route>
             <Route path={"/auctions"}>

@@ -18,16 +18,16 @@
     width: 170px;
     padding: 5px 20px;
     border-radius: 6px;
-    background-color: #edffee;
-    border: 1px solid #707002;
-    color: #707002;
+    background-color: #31b6b5;
+    color: #fff;
+    border: solid 1px #31b6b5;
 
 }
 
 .button-edit:hover {
     background-color: #fff;
-    border: 1px solid #dbdbdb;
-    color: #707002;
+    border: 1px solid #31b6b5;
+    color: #31b6b5;
 }
 
 .title-list-bids {

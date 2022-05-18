@@ -4,10 +4,23 @@ import { Form, Input, Button, Checkbox } from 'antd';
 import { UserOutlined, LockOutlined } from '@ant-design/icons';
 import './Login.css'
 import { Link } from 'react-router-dom';
+import { useDispatch, useSelector } from "react-redux";
+import { useHistory } from "react-router";
+import { loginAction } from "../../redux/actions/auth";
 
 function LoginPage() {
+    const dispacth = useDispatch();
+    const history = useHistory();
+    const { isLoading } = useSelector((state) => state.auth);
+  
+    // const permisson = checkPermission();
+
     const onFinish = (values) => {
-        console.log('Received values of form: ', values);
+        const body = {
+            email: values.email,
+            password: values.password
+        }
+        dispacth(loginAction(body, history));
       };
     return(
         <div>
@@ -62,8 +75,8 @@ function LoginPage() {
                                 </a>
                             </Form.Item>
 
-                            <Form.Item>
-                                <Button type="primary" htmlType="submit" className="login-form-button">
+                            <Form.Item> 
+                                <Button type="primary" htmlType="submit" className="login-form-button" loading={isLoading}>
                                 Đăng nhập
                                 </Button>
                                 Hoặc <Link to="/register">Đăng ký!</Link>

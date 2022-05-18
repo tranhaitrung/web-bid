@@ -18,7 +18,7 @@
 }
 
 .nft-header6 {
-    font-size: 18px;
+    font-size: 16px;
     line-height: 24px;
     font-weight: 600;
     color: #5b616e;
@@ -67,8 +67,8 @@
 }
 
 .nft-body-small {
-    font-size: 17px;
-    line-height: 24px;
+    font-size: 16px;
+    line-height: 25px;
 }
 
 .text-desc {
@@ -133,4 +133,9 @@
     object-fit: cover;
     width: 100%;
     height: 100%;
+}
+
+.hide {
+    height: 25px;
+    overflow: hidden;
 }

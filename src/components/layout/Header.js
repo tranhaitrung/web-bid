@@ -2,6 +2,7 @@ import React from 'react';
 import { Col, Row, Image, Badge, Avatar, Dropdown, Menu} from "antd";
 import { BellOutlined , UserOutlined } from '@ant-design/icons';
 import { Link } from "react-router-dom";
+import { useSelector } from "react-redux";
 
 import './Header.css';
 
@@ -32,32 +33,32 @@ const dropDownNotify = (
   />
 );
 
+function Header() {
 
-const path = window.location.pathname;
+  const email = useSelector((state) => state.auth.email);
+  const userId = useSelector((state) => state.auth.userId);
+  const isLogin = useSelector((state) => state.auth.isLoggedIn);
+  const avatar = useSelector((state) => state.auth.avatar);
+  const name = useSelector((state) => state.auth.name);
+  const id = useSelector((state) => state.auth.id);
 
-class Header extends React.Component {
-
-  constructor(props) {
-    super(props);
-    this.state={
-      token: 'ahkj',
-      avatar: localStorage.getItem("avatar"),
-      username: localStorage.getItem("username")
-    }
-  }
-
-  logout() {
+  const path = window.location.pathname;
+  
+  const logout = () => {
     localStorage.setItem("token", null);
-    this.setState({
-      token: null
-    })
+    localStorage.setItem("exp", 0);
+    localStorage.setItem("avatar", null);
+    localStorage.setItem("role_id", null);
+    localStorage.setItem("user_id", null);
+    localStorage.setItem("email", null);
+    localStorage.setItem("name", null);
   }
 
-  dropDownAvatar = (
+  const dropDownAvatar = (
     <Menu
       items={[
         {
-          label: <Link to={`/account`}>taikhoan@gmail.com</Link>,
+          label: <Link to={`/account`}>{email}</Link>,
           key: '0',
         },
   
@@ -69,65 +70,12 @@ class Header extends React.Component {
           key: '1',
         },
         {
-          label: <Link to={`/login`} onClick={this.logout()}>Đăng xuất</Link>,
+          label: <Link to={`/login`} onClick={logout}>Đăng xuất</Link>,
           key: '3',
         },
       ]}
     />
   );
-
-  renderNotLogin = () => {
-    if (path === '/login') {
-      return (
-        <Link to={`/register`} style={{display:"flex", color:'black'}} >
-          <UserOutlined style={{ fontSize: '24px' }} />
-          <Col style={{ fontSize: '18px', padding: "0 10px" }} >
-            Đăng ký
-          </Col>
-        </Link>
-      );
-    }
-    else if (path === '/register') {
-      return (
-        <Link to={`/login`} style={{display:"flex", color:'black'}} >
-          <UserOutlined style={{ fontSize: '24px' }} />
-          <Col style={{ fontSize: '18px', padding: "0 10px" }} >
-            Đăng nhập
-          </Col>
-        </Link>
-      );
-    }
-    else if (this.state.token == null) {
-      return (
-        <Link to={`/login`} style={{display:"flex", color:'black'}} >
-          <UserOutlined style={{ fontSize: '24px' }} />
-          <Col style={{ fontSize: '18px', padding: "0 10px" }} >
-            Đăng nhập
-          </Col>
-        </Link>
-      );
-    }
-    else if (this.state.token != null) {
-      return (
-        <div className='avatar-header'>
-          <Dropdown overlay={this.dropDownAvatar} trigger={['click']} placement="bottom">
-            <img src="https://s3.ap-southeast-1.amazonaws.com/cleverme-production/blockchain/AVATAR/AVATAR_cake_584494726_1650685683493.jpg" alt="ảnh đại điện"  />
-          </Dropdown>
-        </div>
-      );
-    }
-  }
-
-  renderLogined() {
-    return (
-      <div className='avatar-header'>
-        <Dropdown overlay={this.dropDownAvatar} trigger={['click']} placement="bottom">
-          <img src="https://s3.ap-southeast-1.amazonaws.com/cleverme-production/blockchain/AVATAR/AVATAR_cake_584494726_1650685683493.jpg" alt="ảnh đại điện"  />
-        </Dropdown>
-      </div>
-    );
-  }
-    render(){
     return(
         <div style={{marginBottom:"20px"}}>
           <Row style={{height: "80px", padding: "0 26px"}} justify="space-around" align="middle">
@@ -150,15 +98,45 @@ class Header extends React.Component {
                       </Badge>
                     </Dropdown> 
                   </Col>
-                  <Col span={8}>
-                    <Link to={`/my-auctions`}><span className='my-auction'>Đấu giá của tôi</span></Link> 
-                  </Col>
+                  {
+                    isLogin 
+                    ?
+                    <Col span={8}>
+                      {
+                        <Link to={`/my-auctions`}><span className='my-auction'>Đấu giá của tôi</span></Link> 
+                      }
+                      
+                    </Col>
+                    :
+                    <Col></Col>
+                  }
+
                   <div className='line-head'></div>
                   <Col span={8}>
                     {
-                      this.state.token === null 
-                      ? this.renderLinkLogin()
-                      : this.renderLogined()
+                      isLogin
+                      ? 
+                      <div className='avatar-header'>
+                        <Dropdown overlay={dropDownAvatar} trigger={['click']} placement="bottom">
+                          <img src={avatar} alt="ảnh đại điện"  />
+                        </Dropdown>
+                      </div>
+                      : 
+                      path === '/login' 
+                      ?
+                      <Link to={`/register`} style={{display:"flex", color:'black'}} >
+                        <UserOutlined style={{ fontSize: '24px' }} />
+                        <Col style={{ fontSize: '18px', padding: "0 10px" }} >
+                          Đăng ký
+                        </Col>
+                      </Link>
+                      :
+                      <Link to={`/login`} style={{display:"flex", color:'black'}} >
+                        <UserOutlined style={{ fontSize: '24px' }} />
+                        <Col style={{ fontSize: '18px', padding: "0 10px" }} >
+                          Đăng nhập
+                        </Col>
+                      </Link>
                     }
                   </Col>
                 </Row>
@@ -192,6 +170,5 @@ class Header extends React.Component {
         </div>
     );
   }
-}
 
 export default Header;

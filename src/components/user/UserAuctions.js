@@ -1,9 +1,13 @@
 import { Col, Row } from "antd";
-import React from "react";
-import { Form, Input, Button, Checkbox, Cascader, DatePicker } from 'antd';
-import { UserOutlined, EnvironmentOutlined, MailOutlined, PhoneOutlined } from '@ant-design/icons';
-import { Link } from 'react-router-dom';
+import React, { useEffect, useState } from "react";
+import { Form, Input, Cascader, DatePicker } from 'antd';
+import { UserOutlined } from '@ant-design/icons';
+// import { Link } from 'react-router-dom';
 import moment from 'moment';
+import { useDispatch, useSelector } from "react-redux";
+import { useHistory } from "react-router";
+import apis from '../../redux/apis';
+import {createAuction} from '../../redux/actions/auction';
 
 import '../FormInput.css';
 import './Style.css';
@@ -11,29 +15,46 @@ import './Style.css';
 const {RangePicker} = DatePicker;
 
 function UserAuctions() {
-    const onFinish = (values) => {
-        console.log('Received values of form: ', values);
-    };
 
-    const listCategory = [
-        {         
-            value: '0',
-            label: 'Laptop',
-        },
-        {         
-            value: '2',
-            label: 'Túi xách',
-        },
-        {         
-            value: '3',
-            label: 'Oto',
-        },
-    ]
+    const dispacth = useDispatch();
+    const history = useHistory();
+    const { isLoading } = useSelector((state) => state.auction);
+
+    const [listCategory, setListCategory] = useState([]);
+    
+    useEffect(() => {
+        var tmp = [];
+        apis.categories
+            .listCategory()
+            .then((res) => {
+                var data = res.data.data;
+                for (var i = 0; i < data.length; i++) {
+                   tmp.push({
+                       value: data[i].category_id,
+                       label: data[i].name
+                   })
+                }
+                setListCategory(tmp);
+            })
+    }, [])
 
     function onChange(dates, dateStrings) {
         console.log('From: ', dates[0], ', to: ', dates[1]);
         console.log('From: ', dateStrings[0], ', to: ', dateStrings[1]);
       }
+
+    
+    const onFinish = (values) => {
+        const body = {
+            category_id : values.category,
+            title_ni: values.auction_name,
+            start_date: values.startAt,
+            end_date: values.endAt
+        }
+        console.log(body);
+        dispacth(createAuction(body, history));
+
+    };
 
     return (
         <Col style={{width:'100%'}}>
@@ -58,7 +79,7 @@ function UserAuctions() {
                     >
                         <Input
                         prefix={<UserOutlined className="site-form-item-icon" />}
-                        placeholder="Họ và Tên"
+                        placeholder="Tên đấu giá"
                         className='el-input'
                         size="large"
                         />
@@ -66,14 +87,21 @@ function UserAuctions() {
                     <Form.Item
                         name="category"
                         label="Danh mục"
+                        rules={[{ required: true, message: 'Chọn danh mục' }]}
                     >
-                        <Cascader size="large" options={listCategory} onChange={(key)=>{console.log(key)}} placeholder="Chọn danh mục" />
+                        <Cascader 
+                        size="large" 
+                        options={listCategory} 
+                        placeholder="Chọn danh mục"
+                        dropdownMenuColumnStyle={{width:'520px', height:'42px', fontSize:'17px'}}
+                        />
                     </Form.Item>
                     <Row justify="space-between">
                         <Form.Item
                             name="startAt"
                             label="Bắt đầu"
-                            style={{width:"45%"}}
+                            style={{width:"46%"}}
+                            rules={[{ required: true, message: 'Chọn thời gian bắt đầu' }]}
                         >
                             <DatePicker
                             ranges={{
@@ -91,7 +119,8 @@ function UserAuctions() {
                         <Form.Item
                             name="endAt"
                             label="Kết thúc"
-                            style={{width:"45%"}}
+                            style={{width:"46%"}}
+                            rules={[{ required: true, message: 'Chọn thời gian kết thúc' }]}
                         >
                             <DatePicker
                             ranges={{
@@ -111,8 +140,8 @@ function UserAuctions() {
 
                     <Form.Item style={{marginTop:'20px'}}>
                         <Row>
-                            <button className="btn-action btn-cancel">Hủy</button>
-                            <button className="btn-save btn-action ">Tạo mới</button>
+                            <div className="btn-action btn-cancel">Hủy</div>
+                            <button className="btn-save btn-action " isLoading={isLoading}>Tạo mới</button>
                         </Row>
                     </Form.Item>
                     </Form>

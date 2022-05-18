@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import AuctionComponent from './components/AuctionComponent';
 import OnAuction from './components/OnAuction';
 import UpComing from './components/UpComing';
 import Ending from './components/Ending';
@@ -6,47 +7,43 @@ import Remarkable from './components/Remarkable';
 import Category from './components/Category';
 import { Col, Row, Cascader } from 'antd';
 import { Link } from "react-router-dom";
+import apis from '../../redux/apis';
 
 import './HomePage.css'
 
 function HomePage() {
 
-    function listAuctionOnTime() {
-        var listAuctionEnded = [];
-        for(var i = 1; i <= 4; i++) {
-            listAuctionEnded.push(<OnAuction></OnAuction>);
-        }
+    const [listOntime, setListOnTime] = useState();
+    const [listAuction, setListAuction] = useState();
+    const [listCategory, setListCategory] =useState();
 
-        return listAuctionEnded;
-    }
+    useEffect( ()=>{
+        apis.auction
+            .listAuctionByStatus(1,1, 4) //1: đang diễn ra, 0 số trang, 4 limit
+            .then((res) => {
+                var data = res.data.data.auctions;
+                setListOnTime(data);
+            })
 
-    function listAuctionComming() {
-        var listAuctionEnded = [];
-        for(var i = 1; i <= 3; i++) {
-            listAuctionEnded.push(<UpComing></UpComing>);
-        }
+    }, [])
 
-        return listAuctionEnded;
-    }
+    useEffect(() => {
+        apis.categories
+            .listCategory()
+            .then((res) => {
+                var data = res.data.data;
+                setListCategory(data);
+            })
+    }, [])
 
-    function listAuction() {
-        var listAuctionEnded = [];
-        for(var i = 1; i <= 8; i++) {
-            listAuctionEnded.push(<Ending></Ending>);
-        }
-
-        return listAuctionEnded;
-    }
-
-    function listCategory() {
-        var categories = [];
-        for(var i = 1; i <= 4; i++) {
-            categories.push(<Category></Category>);
-        }
-        return (
-            categories
-        );
-    }
+    useEffect(() => {
+        apis.auction
+            .listAuction(1,8)
+            .then((res) => {
+                var data = res.data.data.auctions;
+                setListAuction(data);
+            })
+    }, [])
 
     const optionAuctionStatus = [
         {
@@ -108,7 +105,9 @@ function HomePage() {
                         </Row>
                         <Row style={{width:'1200px'}}>
                             {
-                                listAuctionOnTime()
+                                listOntime?.map((auction) => (
+                                    <AuctionComponent auction={auction}></AuctionComponent>
+                                ))
                             }
                         </Row>
                         <Row justify="center" style={{width:'1200px'}}>
@@ -159,7 +158,9 @@ function HomePage() {
                         </Row>
                         <Row style={{width:'1200px'}} >
                             {
-                                listCategory()
+                                listCategory?.map((category) => (
+                                    <Category name={category.name} image={category.image}></Category>
+                                ))  
                             }
                                 
                         </Row>
@@ -191,7 +192,16 @@ function HomePage() {
 
                         <Row style={{width:'1200px'}}>
                             {
-                                listAuction()
+                                listAuction?.map((auction)=> (
+                                    <AuctionComponent 
+                                    // title ={auction.title}
+                                    // startDate = {auction.start_date}
+                                    // endDate = {auction.end_date}
+                                    // statusId = {auction.statusId}
+                                    // avatar = {auction.category.image}
+                                    auction = {auction}
+                                    />
+                                ))
                             }
                         </Row>
                         <Row justify="center" style={{width:'1200px'}}>

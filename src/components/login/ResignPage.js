@@ -1,12 +1,53 @@
-import React from 'react';
+import React, {useState} from 'react';
 import {Card, Col, Row} from 'antd';
-import { Form, Input, Button, Checkbox } from 'antd';
+import { Form, Input, Button, Checkbox, message } from 'antd';
 import { UserOutlined, LockOutlined, MailOutlined } from '@ant-design/icons';
+import { useHistory } from "react-router";
 import './Sigup.css'
 import { Link } from 'react-router-dom';
+import apis from '../../redux/apis';
 function ResignPage() {
+    const [isLoading, setIsLoading] = useState(false);
+    const history = useHistory();
     const onFinish = (values) => {
-        console.log('Received values of form: ', values);
+        var firstName = values.firstName;
+        var lastName = values.lastName;
+        var phone = values.phone;
+        var email = values.email;
+        var password = values.password;
+        var rePass = values.Repassword;
+        var name = firstName + " "+lastName;
+        if(password != rePass) {
+            message.error("Mật khẩu không khớp");
+            return;
+        }
+
+        setIsLoading(true);
+
+        var body = {
+            email: email,
+            password: password,
+            re_pass: rePass,
+            name: name,
+            phone: phone
+        }
+
+        apis.auth
+            .signUp(body)
+            .then(res => {
+                if (res.data.code === 1000 ) {
+                    message.success("Đăng ký tài khoản thành công");
+                    setIsLoading(false);
+                    history.push("/login")
+                } else {
+                    message.error("Đăng ký thất bại")
+                    setIsLoading(false);
+                }
+            })
+            .catch(err => {
+                message.error("Đăng ký thất bại")
+                setIsLoading(false);
+            })
     };
     return(
         <div>
@@ -95,7 +136,7 @@ function ResignPage() {
                 </Form.Item>
 
                 <Form.Item>
-                    <Button type="primary" htmlType="submit" className="login-form-button" >
+                    <Button type="primary" htmlType="submit" className="login-form-button" loading={isLoading} >
                     Đăng ký
                     </Button>
                     Hoặc <Link to="/login">Đăng nhập</Link>

@@ -3,13 +3,37 @@ import React from "react";
 import { Form, Input, Button, Checkbox } from 'antd';
 import { UserOutlined, EnvironmentOutlined, MailOutlined, PhoneOutlined } from '@ant-design/icons';
 import { Link } from 'react-router-dom';
+import { useDispatch, useSelector } from "react-redux";
+import { useHistory } from "react-router";
+import { updateAccountInfo } from "../../redux/actions/auth";
 
 import '../FormInput.css';
 import './Style.css';
 
 function UserInfo() {
+
+    const dispacth = useDispatch();
+    const history = useHistory();
+    const { isLoading } = useSelector((state) => state.auth);
+
+    const email = useSelector((state) => state.auth.email);
+    const userId = useSelector((state) => state.auth.userId);
+    const isLogin = useSelector((state) => state.auth.isLoggedIn);
+    const avatar = useSelector((state) => state.auth.avatar);
+    const name = useSelector((state) => state.auth.name);
+    const phone = useSelector((state) => state.auth.phone)
+    const id = useSelector((state) => state.auth.id);
+    const address = useSelector((state) => state.auth.address);
+
     const onFinish = (values) => {
-        console.log('Received values of form: ', values);
+        const body = {
+            email: values.email,
+            name: values.name,
+            avatar: values.avatar,
+            phone: values.phone,
+            address: values.address
+        }
+        dispacth(updateAccountInfo(body, history));
     };
     return (
         <Col style={{width:'100%'}}>
@@ -22,7 +46,12 @@ function UserInfo() {
                     <Form
                     name="normal_login"
                     className="signup-form"
-                    initialValues={{ remember: true }}
+                    initialValues={{ remember: true,
+                        name: name,
+                        phone: phone,
+                        email: email,
+                        address: address
+                    }}
                     onFinish={onFinish}
                     layout='vertical'
                     size='middle'
@@ -31,7 +60,7 @@ function UserInfo() {
                     <div className="box1">
                         <div className="change-avatar">
                             <div className="left">
-                                <img src="https://s3.ap-southeast-1.amazonaws.com/cleverme-production/blockchain/AVATAR/AVATAR_cake_584494726_1650685683493.jpg" alt="ảnh đại điện" />
+                                <img src={avatar} alt="ảnh đại điện" />
                                 <div className="box-text">
                                     <span className="title">Đổi ảnh đại điện</span>
                                     <span className="discript">Kích thước ảnh dưới 20MB</span>
@@ -43,6 +72,7 @@ function UserInfo() {
                         name="name"
                         rules={[{ required: true, message: 'Hãy nhập tên của bạn' }]}
                         label="Họ và Tên"
+                        
                     >
                         <Input
                         prefix={<UserOutlined className="site-form-item-icon" />}
@@ -73,7 +103,6 @@ function UserInfo() {
                     </Form.Item>
                     <Form.Item
                         name="address"
-                        rules={[{ required: true, message: 'Hãy nhập địa chỉ' }]}
                         label="Địa chỉ"
                     >
                         <Input prefix={<EnvironmentOutlined className="site-form-item-icon" />} 
@@ -85,7 +114,7 @@ function UserInfo() {
                     <Form.Item>
                         <Row>
                             <button className="btn-action btn-cancel">Hủy</button>
-                            <button className="btn-save btn-action ">Cập nhật</button>
+                            <button className="btn-save btn-action " isLoading={isLoading}>Cập nhật</button>
                         </Row>
                     </Form.Item>
                     </Form>

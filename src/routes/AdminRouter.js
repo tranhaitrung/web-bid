@@ -8,6 +8,8 @@ const ManageAuction = lazy(() => import("../components/manage/auctions/ManageAuc
 const ManageBids = lazy(() => import("../components/manage/bids/ManageBids"));
 const ManageCategory = lazy(() => import("../components/manage/category/ManageCategory"));
 const ManageUser = lazy(() => import("../components/manage/users/ManageUser"));
+const ListBrand = lazy(() => import('../components/manage/brand/ListBrand'))
+const ListItem = lazy(() => import('../components/manage/item/ListItem'))
 
 
 function AdminRouter() {
@@ -35,6 +37,16 @@ function AdminRouter() {
             component={ManageBids}
             exact
             path={`${path}/bids`}
+          />
+          <Route
+            component={ListItem}
+            exact
+            path={`${path}/items`}
+          />
+          <Route
+            component={ListBrand}
+            exact
+            path={`${path}/brands`}
           />
         </Switch>
       </Suspense>

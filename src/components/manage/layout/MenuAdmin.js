@@ -18,7 +18,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { SiderWrapper, HeaderWrapper, ContentWrapper } from "./MenuStyle";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { AppstoreOutlined, TeamOutlined, FileDoneOutlined, SettingOutlined, BarsOutlined } from '@ant-design/icons';
+import { AppstoreOutlined, TeamOutlined, FileDoneOutlined, SettingOutlined, BarsOutlined, TagsOutlined, InboxOutlined } from '@ant-design/icons';
 
 import { useHistory } from "react-router";
 import { Link } from "react-router-dom";
@@ -41,6 +41,10 @@ function MenuAdmin(props) {
       ? "/admin/categories"
       : path.includes("/admin/bids")
       ? "/admin/bids"
+      : path.includes("/admin/items")
+      ? "/admin/items"
+      : path.includes("/admin/brands")
+      ? "/admin/brands"
       : "/admin/accept-auctions";
     return defaultKey;
   };
@@ -64,6 +68,18 @@ function MenuAdmin(props) {
             icon={< TeamOutlined style={{ fontSize: "20px" }}/>}
           >
             <Link to="/admin/users">Quản lý thành viên</Link>
+          </Menu.Item>
+          <Menu.Item
+            key="/admin/items"
+            icon={ <InboxOutlined style={{ fontSize: "20px" }}/>}
+          >
+            <Link to="/admin/items">Quản lý sản phẩm</Link>
+          </Menu.Item>
+          <Menu.Item
+            key="/admin/brands"
+            icon={ <TagsOutlined style={{ fontSize: "20px" }}/>}
+          >
+            <Link to="/admin/brands">Quản lý thương hiệu</Link>
           </Menu.Item>
           <Menu.Item
             key="/admin/categories"
