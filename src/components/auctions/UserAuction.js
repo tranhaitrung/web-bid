@@ -78,7 +78,7 @@ class UserAuction extends React.Component {
     listAuctionOfUser = () => {
         this.setState({tabActive:'MINE'});
         apis.auction
-            .listAcutionByUser(1,1,12)
+            .listAcutionByUser(0,1,12)
             .then((res) => {
                 let data = res.data.data;
                 if (res.data.code === 1000) {

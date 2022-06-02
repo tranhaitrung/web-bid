@@ -1,6 +1,6 @@
 import apis from "../apis/index";
 import { notification, message } from "antd";
-import { LOGIN_FAIL_1001, BAD_REQUEST_1004 } from "../constants/ErrorCode";
+import { BAD_REQUEST_1001, BAD_REQUEST_1004 } from "../constants/ErrorCode";
 import {CREATE_AUCTION, CREATE_AUCTION_SUCCESS, CREATE_AUCTION_FAILED} from "../constants/ActionType";
 
 const createAuction = (data, history) => (dispatch) => {
@@ -16,7 +16,7 @@ const createAuction = (data, history) => (dispatch) => {
             });
             const auctionId = data.auction_id;
             message.success('Tạo đấu giá thành công');
-            history.push(`/auctions/detail/${auctionId}`);
+            history.push(`/auction/${auctionId}/create-item`);
         } else if (res.data.code === BAD_REQUEST_1004) {
             message.error('Bạn cần đăng nhập để sử dụng dịch vụ');
             dispatch({
@@ -24,7 +24,7 @@ const createAuction = (data, history) => (dispatch) => {
             });
             history.push(`/login`);
 
-        } else if (res.data.code === LOGIN_FAIL_1001) {
+        } else if (res.data.code === BAD_REQUEST_1001) {
             message.error('Thông tin đấu giá không hợp lệ')
             dispatch({
                 type: CREATE_AUCTION_FAILED,
@@ -49,7 +49,7 @@ const createAuction = (data, history) => (dispatch) => {
         // redirectPage(permission, history);
       })
       .catch((error) => {
-    
+        console.log(error);
         notification.error({
           message: "Login Failed",
           description: "Username or Password is incorrect",

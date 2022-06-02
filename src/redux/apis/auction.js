@@ -15,8 +15,12 @@ export default {
         return axios.post(`${URL_DOMAIN}/api/auctions/edit/${auctionId}`, data, configHeader);
     },
 
-    listAuction: (index, count) => {
-        return axios.get(`${URL_DOMAIN}/api/auctions?index=${index}&count=${count}`, configHeader);
+    deleteAuction: (auctionId) => {
+        return axios.post(`${URL_DOMAIN}/api/auctions/deleteAuction/${auctionId}`,null, configHeader);
+    },
+
+    listAuction: (statusId,index, count, userId, typeId, categoryId) => {
+        return axios.get(`${URL_DOMAIN}/api/auctions/${statusId}?index=${index}&count=${count}&user_id=${userId}&type=${typeId}&category_id=${categoryId}`, configHeader);
     },
 
     listAuctionByStatus: (statusId,index, count) => {
@@ -49,5 +53,9 @@ export default {
 
     listBid: (auctionId, index, count) => {
         return axios.get(`${URL_DOMAIN}/api/bids/${auctionId}?index=${index}&count=${count}`, configHeader);
+    },
+
+    bid: (auctionId, data) => {
+        return axios.post(`${URL_DOMAIN}/api/bids/create/${auctionId}`, data, configHeader);
     }
 }

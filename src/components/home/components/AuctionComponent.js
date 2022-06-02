@@ -1,7 +1,8 @@
-import { Row, Button, Col, Input, Image, Statistic } from "antd";
+import { Row, Button, Col, Input, Image, Statistic, Modal, message, InputNumber } from "antd";
 import React, { useEffect, useState }  from "react";
-import { Link } from "react-router-dom";
+import { Link, useHistory } from "react-router-dom";
 import { HeartOutlined } from '@ant-design/icons';
+import { useDispatch, useSelector } from "react-redux";
 import apis from '../../../redux/apis';
 import '../HomePage.css';
 
@@ -9,7 +10,12 @@ const { Countdown } = Statistic;
 
 function AuctionComponent(props) {
 
+    const history = useHistory();
+
     const [totalLike, setTotalLike] =useState();
+    const [popUpBid, setPopUpBid] = useState(false);
+    const [yourPrice, setYourBid] = useState();
+    const isLogin = useSelector((state) => state.auth.isLoggedIn);
 
     const image = props.auction.category.image;
     const title = props.auction.title;
@@ -18,6 +24,7 @@ function AuctionComponent(props) {
     const auctionId = props.auction.auction_id;
     const startDate = props.auction.start_date;
     const endDate = props.auction.end_date;
+
 
 
     var unLike = {
@@ -45,7 +52,61 @@ function AuctionComponent(props) {
         })
     }, []);
 
+    function placeABid() {
+        const body = { 
+          "price": yourPrice,
+          "bid_last_id": null
+        }
+  
+        apis.auction
+        .bid(auctionId, body)
+        .then(res => {
+          var data = res.data.data;
+          if (res.data.code === 1000) {
+            message.success("Đấu giá thành công")
+            history.push(`/auctions/detail/${auctionId}`)
+          }
+  
+          if (res.data.code === 1008) {
+            message.error("Dấu giá đã kết thúc")
+          }
+  
+          if (res.data.code === 1001) {
+            message.error(res.data.message)
+          }
+          if (res.data.code === 1004) {
+            message.error("Bạn cần phải đăng nhập để sử dụng tính năng này")
+            history.push("/login")
+          }
+  
+        })
+        .catch(e=>{
+          if (e.response.status === 401) {
+            message.error("Bạn cần phải đăng nhập để sử dụng tính năng này")
+            history.push("/login")
+          }
+          if (e.response.status >= 500) {
+            message.error("INTERNAL SERVER")
+          }
+          
+        })
+  
+      }
+
+      function showModalBid () {
+        if (!isLogin) {
+          message.error("Bạn cần đăng nhập để sử dụng tính năng này")
+          history.push("/login")
+        }
+        setPopUpBid(true); 
+      };
+      
+      function hideModalBid () {
+        setPopUpBid(false);
+        };
+
     return (
+        <>
         <Col className="item">
             <Link to={`auctions/detail/${auctionId}`}>
                 <Row className="avatar cursor">
@@ -62,22 +123,25 @@ function AuctionComponent(props) {
                             <div className="nft-header6 cursor hide"> {title} </div> 
                         </Link>
                     </Row>
-                    <Row className="nft-body-small price">
+                    {/* <Row className="nft-body-small price">
                         <div>
-                            <span className="text-desc">Giá khởi điểm:</span>
-                            <span className="text-price">10000000</span>
+                            <span className="text-desc-component">Thời gian kết thúc</span>
+                            <span className="text-price"></span>
                         </div>
-                    </Row>
+                    </Row> */}
 
                     <Row className="nft-body-small price">
-                        <div>
-                            <span className="text-desc">Chưa có người tham gia</span>
-                        </div>
+                        <span className="ttext-desc-component">Đóng đấu giá sau</span>
+                        <Countdown 
+                        value={endDate} 
+                        format="D Ngày H Giờ m Phút s Giây" 
+                        valueStyle={{fontSize:'15px'}}
+                        />
                     </Row>
                     <div className="line"></div>
                     
                     <Row justify="space-between">
-                        <div className="text-hyperlink text-semibold cursor nft-header6">Đấu giá</div>
+                        <div className="text-hyperlink text-semibold cursor nft-header6" onClick={showModalBid}>Đấu giá</div>
                         <div style={{fontSize:'18px'}}>
                             <HeartOutlined style={styleHeart} className='cursor' />
                             <span style={{marginLeft:'5px'}}>{ totalLike }</span>
@@ -104,7 +168,7 @@ function AuctionComponent(props) {
                     </Row> */}
 
                     <Row className="nft-body-small price">
-                        <span className="text-desc">Bắt đầu sau:</span>
+                        <span className="ttext-desc-component">Bắt đầu sau:</span>
                         <Countdown 
                         value={startDate} 
                         format="D Ngày H Giờ m Phút s Giây" 
@@ -135,8 +199,8 @@ function AuctionComponent(props) {
                     </Row>
                     <Row className="nft-body-small price" align='middle' style={{height:"55px"}}>
                         <div>
-                            <span className="text-desc">Thắng cuộc:</span>
-                            <span className="text-price">Nguyễn Văn An</span>
+                            <span className="text-desc">Đấu giá đã kết thúc</span>
+                            {/* <span className="text-price">Nguyễn Văn An</span> */}
                         </div>
                     </Row>
 
@@ -155,7 +219,42 @@ function AuctionComponent(props) {
                 
             </Row>
             }
+
         </Col>
+        <div>
+        <Modal
+            title="Đấu Giá"
+            centered
+            visible={popUpBid}
+            onCancel={ hideModalBid}
+            width={500}
+            footer={[
+              <button 
+                className="btn-bid-cancel"
+                onClick={hideModalBid}
+              >
+                Hủy
+              </button>,
+              <button
+                className="btn-bid"
+                onClick={ placeABid }
+              >
+                Đặt Giá
+              </button>,
+            ]}
+          >
+            <div style={{padding:'0 0'}}>
+              <div style={{marginBottom:'10px'}}>
+                <div className="text-detail-bid ">
+                  Bạn săp trả giá cho <b>{ title }</b>
+                </div>  
+              </div> 
+              <InputNumber  type="text" placeholder="Đặt giá" className="el-input-bid" controls={false} keyboard={false} value={yourPrice} onChange={setYourBid} />
+
+            </div>
+          </Modal>
+        </div>
+        </>
     );              
 }
 

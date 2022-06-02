@@ -395,6 +395,12 @@
     border: 1px solid #dbdbdb;
 }
 
+.detail-heading .btn-action-detail {
+    height: 48px;
+    padding: 12px;
+    border: 1px solid #dbdbdb;
+}
+
 .align-center {
     align-items: center;
 }
@@ -403,7 +409,7 @@
     display: inline-flex!important;
 }
 
-.favourite {
+.detail-heading .favourite {
     border-right: none;
 }
 

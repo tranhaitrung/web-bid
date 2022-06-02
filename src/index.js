@@ -5,25 +5,7 @@ import App from './App';
 import reportWebVitals from './reportWebVitals';
 import { Provider } from 'react-redux';
 import store from './redux/store/index';
-import { LOGIN_SUCCESS } from './redux/constants/ActionType';
-
-// const token = localStorage.getItem("token");
-// if(token) {
-//   let pubData = jwts.decode(token);
-//     let now = new Date().getTime() / 1000; // timestamp in seconds
-//     if (pubData && pubData.exp > now) {
-//       let { username, permission, id } = DecodeJwt(token);
-//         store.dispatch({
-//           type: LOGIN_SUCCESS,
-//           payload: {
-//               token,
-//               username,
-//               permission,
-//               id
-//           }
-//         });
-//     }
-// }                
+import { LOGIN_SUCCESS } from './redux/constants/ActionType';            
 
 const token = localStorage.getItem("token");
 const exp =    localStorage.getItem("exp");

@@ -46,12 +46,11 @@ function UserAuctions() {
     
     const onFinish = (values) => {
         const body = {
-            category_id : values.category,
+            category_id : values.category[0],
             title_ni: values.auction_name,
             start_date: values.startAt,
             end_date: values.endAt
         }
-        console.log(body);
         dispacth(createAuction(body, history));
 
     };

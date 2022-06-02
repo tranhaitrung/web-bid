@@ -1,8 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import AuctionComponent from './components/AuctionComponent';
-import OnAuction from './components/OnAuction';
-import UpComing from './components/UpComing';
-import Ending from './components/Ending';
 import Remarkable from './components/Remarkable';
 import Category from './components/Category';
 import { Col, Row, Cascader } from 'antd';
@@ -13,13 +10,15 @@ import './HomePage.css'
 
 function HomePage() {
 
-    const [listOntime, setListOnTime] = useState();
-    const [listAuction, setListAuction] = useState();
-    const [listCategory, setListCategory] =useState();
+    const [listOntime, setListOnTime] = useState()
+    const [listAuction, setListAuction] = useState()
+    const [listCategory, setListCategory] =useState()
+    const [listCategoryFilter, setListCategoryFilter] = useState([])
+    const [params, setParams] = useState([])
 
     useEffect( ()=>{
         apis.auction
-            .listAuctionByStatus(1,1, 4) //1: đang diễn ra, 0 số trang, 4 limit
+        .listAuction(1,1,8, '', '', '') //1: đang diễn ra, 0 số trang, 4 limit
             .then((res) => {
                 var data = res.data.data.auctions;
                 setListOnTime(data);
@@ -31,14 +30,24 @@ function HomePage() {
         apis.categories
             .listCategory()
             .then((res) => {
-                var data = res.data.data;
-                setListCategory(data);
+                let data = res.data.data;
+                var cates = [];
+                for (var i = 0; i < data.length; i++) {
+                    var tmp = {
+                        value: data[i].category_id,
+                        label: data[i].name
+                    }
+                    cates.push(tmp);
+                    
+                }
+                setListCategoryFilter(cates)
+                setListCategory(data)
             })
     }, [])
 
     useEffect(() => {
         apis.auction
-            .listAuction(1,8)
+            .listAuction(0,1,8, '', '', '')
             .then((res) => {
                 var data = res.data.data.auctions;
                 setListAuction(data);
@@ -46,6 +55,10 @@ function HomePage() {
     }, [])
 
     const optionAuctionStatus = [
+        {
+            value: '0',
+            label: 'Tất cả đấu giá',
+        },
         {
             value: '1',
             label: 'Đang diễn ra',
@@ -71,21 +84,40 @@ function HomePage() {
             label: 'Đã bán thành công',
         },
       ];
-      
-      function onChange(value) {
-        console.log(value);
-      }
 
-      const optionCategories = [
-        {
-            value: '1',
-            label: 'Nhà đất',
-        },
-        {
-            value: '2',
-            label: 'Ô tô - Xe máy',
-        },
-      ];
+    var mapParam = new Map()
+      
+    function onChangeStatus(value) {
+        console.log(value)
+        mapParam.set("statusId", value)
+        setParams(mapParam)
+        callApi()
+    }
+
+    function onChangeCategory(value) {
+        mapParam.set("categoryId", value)
+        setParams(mapParam)
+        callApi()
+    }
+
+    function callApi() {
+        const statusId = mapParam.get("statusId") === null ? 0 : mapParam.get("statusId")
+        const categoryId = mapParam.get("categoryId") === null ? '' : mapParam.get("categoryId")
+        const typeId = ''
+        const userId = ''
+        const page = 1
+        const limit = 12
+        getListAuction(statusId, page, limit, userId, typeId, categoryId)
+    }
+
+    function getListAuction(statusId, page, limit, userId, typeId, categoryId) {
+        apis.auction
+        .listAuction(statusId, page, limit, userId, typeId, categoryId)
+        .then((res) => {
+            var data = res.data.data.auctions;
+            setListAuction(data);
+        })
+    }
     
     function jumpToHead() {
         window.scrollTo(0, 0);
@@ -117,38 +149,6 @@ function HomePage() {
                         </Row>
                     </Row>
 
-                    {/* <Row>
-                        <Row>
-                            <h1>Đấu giá sắp tới</h1>
-                        </Row>
-                        <Row style={{width:'1200px'}}>
-                            {
-                                listAuctionComming()
-                            }
-                        </Row>
-                        <Row justify="center" style={{width:'1200px'}}>
-                            <button className="button-load-more nft-header6">
-                                Xem thêm
-                            </button>
-                        </Row>
-                    </Row>
-
-                    <Row>
-                        <Row>
-                            <h1>Đấu giá đã kết thúc</h1>
-                        </Row>
-                        <Row style={{width:'1200px'}}>
-                            {
-                                listAuctionEnded()
-                            }
-                        </Row>
-                        <Row justify="center" style={{width:'1200px'}}>
-                            <button className="button-load-more nft-header6">
-                                Xem thêm
-                            </button>
-                        </Row>
-                    </Row> */}
-
                     <Row>
                         <Row justify='center'>
                             <div>
@@ -175,32 +175,25 @@ function HomePage() {
                             <Cascader 
                             size="large" 
                             options={optionAuctionStatus} 
-                            onChange={onChange} 
+                            onChange={onChangeStatus} 
                             placeholder="Trạng thái" 
-                            style={{borderRadius:'10px', marginRight: '20px'}}
+                            dropdownMenuColumnStyle= {{width: "170px", borderRadius:'8px'}}
                             />
-
 
                             <Cascader 
                             size="large" 
-                            options={optionCategories} 
-                            onChange={onChange} 
+                            options={listCategoryFilter} 
+                            onChange={onChangeCategory} 
                             placeholder="Danh mục" 
-                            style={{borderRadius:'8px'}}
+                            dropdownMenuColumnStyle= {{width: "170px", borderRadius:'8px'}}
+                            style={{marginLeft: "20px"}}
                             />
                         </Row>
 
                         <Row style={{width:'1200px'}}>
                             {
                                 listAuction?.map((auction)=> (
-                                    <AuctionComponent 
-                                    // title ={auction.title}
-                                    // startDate = {auction.start_date}
-                                    // endDate = {auction.end_date}
-                                    // statusId = {auction.statusId}
-                                    // avatar = {auction.category.image}
-                                    auction = {auction}
-                                    />
+                                    <AuctionComponent auction = {auction} />
                                 ))
                             }
                         </Row>

@@ -1,14 +1,15 @@
-import React, { useEffect, useState }  from "react";
-import { Col, Row, List, Comment, Avatar, Form, Button, Input, Empty, Modal, Cascader, DatePicker } from "antd";
-import { HeartOutlined, MoreOutlined } from '@ant-design/icons';
+import React, { useEffect, useState } from "react";
+import { Col, Row, List, Comment, Avatar, Form, Button, Input, Empty, Modal, Cascader, DatePicker, InputNumber, message } from "antd";
+import { HeartOutlined, MoreOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
 import moment from 'moment';
 import NumberFormat from 'react-number-format';
 import { Route, useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
+import { useHistory } from "react-router-dom";
 // import { Link } from 'react-router-dom';
 
 import apis from "../../redux/apis";
-import {currencyFormat} from "../../common/Format"
+import { currencyFormat } from "../../common/Format"
 
 import './Detail.css'
 
@@ -20,24 +21,26 @@ function onChange(dates, dateStrings) {
   console.log('From: ', dates[0], ', to: ', dates[1]);
   console.log('From: ', dateStrings[0], ', to: ', dateStrings[1]);
 }
-  
-  const { TextArea } = Input;
 
-  
-  const Editor = ({ onChange, onSubmit, submitting, value }) => (
-    <>
-      <Form.Item>
-        <TextArea rows={4} onChange={onChange} value={value} />
-      </Form.Item>
-      <Form.Item>
-        <Button htmlType="submit" loading={submitting} onClick={onSubmit} type="primary">
-          Bình luận
-        </Button>
-      </Form.Item>
-    </>
-  );
- 
+const { TextArea } = Input;
+
+
+const Editor = ({ onChange, onSubmit, submitting, value }) => (
+  <>
+    <Form.Item>
+      <TextArea rows={4} onChange={onChange} value={value} />
+    </Form.Item>
+    <Form.Item>
+      <Button htmlType="submit" loading={submitting} onClick={onSubmit} type="primary">
+        Bình luận
+      </Button>
+    </Form.Item>
+  </>
+);
+
 function AuctionDetail() {
+
+  const history = useHistory();
 
   const [tabActive, setTabActive] = useState("BIDS");
   const [menuDisplay, setMenuDisplay] = useState(false);
@@ -57,505 +60,660 @@ function AuctionDetail() {
   const userId = useSelector((state) => state.auth.userId);
   const avatar = useSelector((state) => state.auth.avatar);
   const [listBid, setListBid] = useState([]);
+  const [yourPrice, setYourBid] = useState();
 
-  const {auctionId} = useParams();
+  const { auctionId } = useParams();
 
-  useEffect(()=>{
+  useEffect(() => {
     initData()
+    console.log("id:"+userId)
   }, [])
-      
-  function initData () {
 
-      apis.auction
+  function initData() {
+    auctionDetail()
+
+    apis.auction.totalLikeAuction(auctionId)
+      .then((res) => {
+        var data = res.data.data.total_liked;
+        setTotalLikeAuction(data);
+      })
+
+    apis.categories
+      .listCategory()
+      .then(res => {
+        var data = res.data.data;
+        const ctgs = [];
+        for (var i = 0; i < data.length; i++) {
+          var ctg = {
+            value: data[i].category_id,
+            label: data[i].name,
+          }
+          ctgs.push(ctg);
+        }
+        setListCategory(ctgs);
+      }
+      )
+
+    apis.comment
+      .listComment(auctionId, 0, 100)
+      .then(res => {
+        var data = res.data.data;
+        setTotalComment(data.total)
+        setComments(data.comments)
+      })
+
+    getListBid()
+  }
+
+  function auctionDetail() {
+    apis.auction
       .auctionDetail(auctionId)
       .then((res) => {
         var data = res.data.data;
         var auction = data.auctions;
         var category = data.category;
         var item = data.items;
-        var seller = data.selling_user;
+        var sellerRes = data.selling_user;
         var maxBid = data.max_bid;
 
         setAuction(auction);
         setCategory(category);
         setItem(item);
-        setSeller(seller);
+        setSeller(sellerRes);
         setMaxBid(maxBid);
-
+        console.log(seller)
       })
+  }
 
-      apis.auction
+  function getListBid() {
+    apis.auction
       .listBid(auctionId, 1, 10)
       .then(res => {
-        var data = res.data.data;
+        var data = res.data.data
         setListBid(data.bids)
       })
+  }
 
-      apis.auction.totalLikeAuction(auctionId)
-      .then((res) => {
-          var data = res.data.data.total_liked;
-          setTotalLikeAuction(data);
-      })
+  function showModalBid() {
+    setPopUpBid(true);
+  };
 
-      apis.categories
-        .listCategory()
-        .then(res => {
-          var data = res.data.data;
-          setListCategory(data);
-        }
-      )
+  function hideModalBid() {
+    setPopUpBid(false);
+  };
 
-      apis.comment
-      .listComment(auctionId, 0, 100)
+  function showEditAuction() {
+    setMenuDisplay(false);
+    setPopUpEditAuction(true);
+  };
+
+  function hideEditAuction() {
+    setMenuDisplay(false);
+    setPopUpEditAuction(false);
+  };
+
+  function changeTab(text) {
+    setTabActive(text)
+  }
+
+  function handleSubmit() {
+    if (!value) {
+      return;
+    }
+
+    setSubmitting(true)
+
+    setTimeout(() => {
+      this.setState({
+        submitting: false,
+        value: '',
+        comments: [
+          ...comments,
+          {
+            author: 'Han Solo',
+            avatar: 'https://joeschmoe.io/api/v1/random',
+            content: <p>{value}</p>,
+            datetime: moment().fromNow(),
+          },
+        ],
+      });
+    }, 1000);
+  };
+
+  function handleChange(e) {
+    setValue(e.target.value)
+  };
+
+  function placeABid() {
+    const body = {
+      "price": yourPrice,
+      "bid_last_id": null
+    }
+
+    apis.auction
+      .bid(auctionId, body)
       .then(res => {
         var data = res.data.data;
-        setTotalComment(data.total);
-        setComments(data.comments)
+        if (res.data.code === 1000) {
+          message.success("Đấu giá thành công")
+          auctionDetail()
+          getListBid()
+          hideModalBid()
+        }
+
+        if (res.data.code === 1008) {
+          message.error("Dấu giá đã kết thúc")
+        }
+
+        if (res.data.code === 1001) {
+          message.error(res.data.message)
+        }
+        if (res.data.code === 1004) {
+          message.error("Bạn cần phải đăng nhập để sử dụng tính năng này")
+          history.push("/login")
+        }
+
       })
-    }
+      .catch(e => {
+        if (e.response.status === 401) {
+          message.error("Bạn cần phải đăng nhập để sử dụng tính năng này")
+          history.push("/login")
+        }
+        if (e.response.status >= 500) {
+          message.error("INTERNAL SERVER")
+        }
 
-    function showModalBid () {
-      setPopUpBid(true); 
-    };
-    
-    function hideModalBid () {
-      setPopUpBid(false);
-      };
+      })
 
-    function showEditAuction () {
-        setMenuDisplay(false);
-        setPopUpEditAuction(true);
-      };
+  }
 
-    function hideEditAuction () {
-        setMenuDisplay(false);
-        setPopUpEditAuction(false);
-      };
-    
+  const deleteAuction = () => {
+    apis.auction
+        .deleteAuction(auctionId)
+        .then(res => {
+          var statusCode = res.data.code
+          if (statusCode === 1000) {
+            message.success("Xóa đấu giá thành công")
+            history.push(`/my-auctions`)
+          }
+          if (statusCode === 9994) {
+            message.error("Không thể xóa. Đấu giá đã được duyệt")
+          }
+          if (statusCode === 1006) {
+            message.error("Bạn không phải người bán")
+          }
+          if (statusCode === 1004) {
+            message.error("Bạn cần đăng nhập để sử dụng chức năng này")
+            history.push(`/login`)
+          }
+        })
+        .catch(err => {
+          if (err.response.status === 401) {
+            message.error("Bạn cần đăng nhập để sử dụng chức năng này")
+            history.push(`/login`)
+          }
+          if (err.response.status === 500) {
+            message.error("INTERNAL SERVER")
+          }
+        })
+  }
 
-    
-    function changeTab (text) {
-      setTabActive(text)
-    }
-    
-    function handleSubmit () {
-      if (!value) {
-        return;
-      }
-    
-      setSubmitting(true)
-    
-      setTimeout(() => {
-        this.setState({
-          submitting: false,
-          value: '',
-          comments: [
-            ...comments,
-            {
-              author: 'Han Solo',
-              avatar: 'https://joeschmoe.io/api/v1/random',
-              content: <p>{value}</p>,
-              datetime: moment().fromNow(),
-            },
-          ],
-        });
-        }, 1000);
-      };
-    
-      function handleChange(e) {
-        setValue(e.target.value)
-      };
+  const confirmDeleteAuction = () => {
+    Modal.confirm({
+      title: 'Cảnh báo',
+      icon: <ExclamationCircleOutlined />,
+      content: 'Sau khi xóa, cuộc đấu giá sẽ không thể khôi phục',
+      okText: <div onClick={deleteAuction}>Xác nhận</div>,
+      cancelText: 'Hủy',
+    });
+  };
 
-    return(
-      <Row justify="center">
-        <Col className="detail">
-            <Row>
-                <div className="detail-left">
-                  <div className="main-image">
-                    <div className="content-media">
-                      <img src={item.mainImage} alt="ảnh detail" />
+  return (
+    <Row justify="center">
+      <Col className="detail">
+        <Row>
+          <div className="detail-left">
+            <div className="main-image">
+              <div className="content-media">
+                <img src={item.mainImage} alt="ảnh detail" />
+              </div>
+            </div>
+            <div>
+              <List
+                grid={{ gutter: 10 }}
+                dataSource={item.images}
+                renderItem={item => (
+                  <List.Item>
+                    <img src={item} style={{ width: "100px", height: '100px', borderRadius: '5px' }} />
+                  </List.Item>
+                )}
+              />
+            </div>
+          </div>
+          <div className="detail-right m1-auto">
+            <Row className="detail-heading" justify='space-between'>
+              <div className="auction-title">{auction.title}</div>
+
+              <Row className="pro-flex">
+                <div className="btn-action-detail border-left d-flex aign-center pro-flex favourite" style={{ fontSize: '20px' }}>
+                  <HeartOutlined className='cursor' />
+                  <span style={{ marginLeft: '5px' }} className='align-center pro-flex'>{totalLikeAuction}</span>
+                </div>
+                <div
+                  className="btn-action-detail border-right d-flex aign-center pro-flex cursor"
+                  onClick={() => {
+                    setMenuDisplay(true)
+                  }}
+                  style={{ fontSize: '20px' }}>
+                  <MoreOutlined />
+                </div>
+                <div>
+                </div>
+              </Row>
+            </Row>
+            <div className="item-title">
+              {item.name}
+            </div>
+            <div className="detail-des">
+              {item.description}
+            </div>
+
+            <div className="sack">
+              <div className="sack-seller">
+                <div className="sack-seller-title">Danh mục</div>
+                <div className="sack-seller-detail">
+                  <div>
+                    <div className="wrap-media">
+                      <div className="content-media">
+                        <img src={category.image} alt="ảnh danh mục" />
+                      </div>
                     </div>
                   </div>
                   <div>
-                  <List
-                      grid={{ gutter: 10 }}
-                      dataSource={item.images}
-                      renderItem={item => (
-                      <List.Item>
-                          <img src={item} style={{width: "100px", height:'100px', borderRadius:'5px'}}/>
-                      </List.Item>
-                      )}
-                  />
-                    </div>
+                    <span>{category.name}</span>
+                  </div>
                 </div>
-                <div className="detail-right m1-auto">
-                    <Row className="detail-heading" justify='space-between'>
-                        <div className="auction-title">{ auction.title }</div>
-
-                        <Row className="pro-flex">
-                          <div className="btn-action border-left d-flex aign-center pro-flex favourite" style={{fontSize:'20px'}}>
-                            <HeartOutlined className='cursor' />
-                            <span style={{marginLeft:'5px'}} className='align-center pro-flex'>{ totalLikeAuction }</span>
-                          </div>
-                          <div 
-                          className="btn-action border-right d-flex aign-center pro-flex cursor" 
-                          onClick={() => {
-                            setMenuDisplay(true)
-                          }}
-                          style={{fontSize:'20px'}}>
-                              <MoreOutlined />
-                          </div>
-                          <div>
-                          </div>
-                        </Row>
-                    </Row>
-                    <div className="item-title">
-                        { item.name }
-                    </div>
-                    <div className="detail-des">
-                        { item.description }
-                    </div>
-
-                    <div className="sack">
-                        <div className="sack-seller">
-                            <div className="sack-seller-title">Danh mục</div>
-                            <div className="sack-seller-detail">
-                                <div>
-                                    <div className="wrap-media">
-                                        <div className="content-media">
-                                            <img src={category.image} alt="ảnh danh mục" />
-                                        </div>
-                                    </div>
-                                </div>
-                                <div>
-                                    <span>{category.name}</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="sack-seller">
-                            <div className="sack-seller-title">Người bán</div>
-                            <div className="sack-seller-detail">
-                                <div>
-                                    <div className="wrap-media">
-                                        <div className="content-media">
-                                            <img src={ seller.selling_user_avatar } alt="ảnh đại diện người bán" />
-                                        </div>
-                                    </div>
-                                </div>
-                                <div>
-                                    <span> { seller.selling_user_name } </span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div className="list-item">
-                        <div className="item-i">Thông Tin</div>
-                    </div>
-                    <div className="content-about">
-                        <div className="content-about1" style={{marginTop:'20px'}}>
-                            <div className="content-about1-title">Giá khởi điểm</div>
-                            <div className="content-about1-code">
-                              <NumberFormat value={item.starting_price} displayType={'text'} thousandSeparator={true} />
-                            </div>
-                        </div>
-                        <div className="content-about1">
-                            <div className="content-about1-title">Bắt đầu</div>
-                            <div className="content-about1-code"> { auction.start_date } </div>
-                        </div>
-                        <div className="content-about1">
-                            <div className="content-about1-title">Kết thúc</div>
-                            <div className="content-about1-code">{ auction.end_date }</div>
-                        </div>
-
-                    </div>
-
-                    <div className="highest-bid">
-                      {
-                        maxBid === null 
-                        ?
-                        <div className="highest-bid_title nft-body-base">Chưa có người tham gia</div>
-                        :
-                        <div>
-                          <div className="highest-bid_title nft-body-base">Giá cao nhất</div>
-                          <div className="highest-bid_price"> 
-                            <NumberFormat value={maxBid} displayType={'text'} thousandSeparator={true} />
-                          </div>
-                        </div>
-
-                      }
-                    </div>
-
-                    <div className="detail-button">
-                        <div className="w-100">
-                            <button className="el-button-custom" onClick={showModalBid}>
-                                <span>Đấu Giá</span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </Row>
-            <Row className="tabs pro-flex">
-                <div 
-                className={ 
-                    tabActive === 'BIDS' 
-                    ? "tab-active text-desc cursor tab-item nft-body-base" 
-                    : "text-desc cursor tab-item nft-body-base"
-                }
-                onClick={()=>{
-                    setTabActive("BIDS")
-                }}
-                > Danh sách đấu giá</div>
-
-                <div 
-                className={ 
-                    tabActive === 'COMMENTS' 
-                    ? "tab-active text-desc cursor tab-item nft-body-base" 
-                    : " text-desc cursor tab-item nft-body-base"
-                } 
-    
-                onClick={()=>{
-                    setTabActive("COMMENTS")
-                }}
-                >Bình luận</div>
-
-            </Row>
-            {
-                tabActive === 'BIDS' ?
-                
-                <Row className="list-bid" justify="center">
-                    <table className="table w-100">
-                        <tr className="w-100 row ">
-                            <th className="col1 title-head" >Người đấu giá</th>
-                            <th className="col2 title-head">Giá</th>
-                        </tr>
-
-                        {
-                          listBid.length > 0 
-                          ?
-                          listBid?.map((bid) => (
-                            <tr className="w-100 row">
-                              <td className="col1">
-                                  <div className="wrap-media">
-                                      <div className="content-media">
-                                          <img src={bid.user_avatar} alt="avatar bidder" />
-                                      </div>
-                                  </div>
-                                  <div><span>{ bid.user_name }</span></div>
-                              </td>
-                              <td className="col2">
-                                  <div>
-                                      <span><NumberFormat value={bid.price} displayType={'text'} thousandSeparator={true} /></span>
-                                  </div>
-                              </td>
-                            </tr>
-                          ))
-
-                          :
-                          <Row justify="center" style={{width: '100%'}}>
-                            <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} /> 
-                          </Row>
-                        }
-
-                    </table>
-                </Row>
-                :
-                <Row style={{width: "100%"}}>
-                    {/* {comments.length > 0 && <CommentList comments={comments} />} */}
-                    <Row style={{width: "100%"}}>
-                      <Comment
-                      avatar={<Avatar src={avatar} alt="Han Solo" />}
-                      content={
-                          <Editor
-                          onChange={handleChange}
-                          onSubmit={handleSubmit}
-                          submitting={submitting}
-                          value={value}
-                          />
-                      }
-                      style={{width:'600px'}}
-                      />
-                    </Row>
-
-
-                    <List
-                        className="comment-list"
-                        header={`${totalComments} replies`}
-                        itemLayout="horizontal"
-                        dataSource={comments}
-                        renderItem={item => (
-                        <li>
-                            <Comment
-                            author={item.user_name}
-                            avatar={item.user_avatar}
-                            content={item.content}
-                            datetime={item.updated_at}
-                            />
-                        </li>
-                        )}
-                    />
-                </Row>
-            }
-            <Row style={{margin:'50px 0'}}></Row>
-        </Col>
-        <div style={{fontSize:'35px'}}>
-          <Modal
-            title="Đấu Giá"
-            centered
-            visible={popUpBid}
-            onCancel={ hideModalBid}
-            width={500}
-            footer={[
-              <button 
-                className="btn-bid-cancel"
-                onClick={hideModalBid}
-              >
-                Hủy
-              </button>,
-              <button
-                className="btn-bid"
-                onClick={ hideModalBid}
-              >
-                Đặt Giá
-              </button>,
-            ]}
-          >
-            <div style={{padding:'0 0'}}>
-              <div style={{marginBottom:'10px'}}>
-                <div className="text-detail-bid ">
-                  Bạn săp trả giặt đặt cho cái nhà ABCD này
-                </div>  
               </div>
-              <input type="text" placeholder="Đặt giá" className="el-input-bid" />
+              <div className="sack-seller">
+                <div className="sack-seller-title">Người bán</div>
+                <div className="sack-seller-detail">
+                  <div>
+                    <div className="wrap-media">
+                      <div className="content-media">
+                        <img src={seller.selling_user_avatar} alt="ảnh đại diện người bán" />
+                      </div>
+                    </div>
+                  </div>
+                  <div>
+                    <span> {seller.selling_user_name} </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="list-item">
+              <div className="item-i">Thông Tin</div>
+            </div>
+            <div className="content-about">
+              <div className="content-about1" style={{ marginTop: '20px' }}>
+                <div className="content-about1-title">Giá khởi điểm</div>
+                <div className="content-about1-code">
+                  <NumberFormat value={item.starting_price} displayType={'text'} thousandSeparator={true} />
+                </div>
+              </div>
+              <div className="content-about1">
+                <div className="content-about1-title">Bắt đầu</div>
+                <div className="content-about1-code"> {auction.start_date} </div>
+              </div>
+              <div className="content-about1">
+                <div className="content-about1-title">Kết thúc</div>
+                <div className="content-about1-code">{auction.end_date}</div>
+              </div>
 
             </div>
-          </Modal>
-        </div>
 
-        <div style={{fontSize:'35px'}}>
-          <Modal
-            title="Sửa Đấu Giá"
-            centered
-            visible={popUpEditAuction}
-            onCancel={ hideEditAuction}
-            width={600}
-            footer={[
-              <button 
-                className="btn-bid-cancel"
-                onClick={hideEditAuction}
-              >
-                Hủy
-              </button>,
-              <button
-                className="btn-bid"
-                onClick={ hideEditAuction}
-              >
-                Sửa
-              </button>,
-            ]}
-          >
-            <div style={{padding:'0 0'}}>
-            <Col style={{width:'100%'}}>
-              <Row justify="center"  style={{display:"flex", justifyContent:"center", marginTop:"1em"}}>
-                  <Col style={{width:'100%'}}>
-                      <Form
-                      name="create_auction_form"
-                      className="signup-form"
-                      initialValues={{ remember: true }}
-                      onFinish={onFinish}
-                      layout='vertical'
-                      size='middle'
-                      style={{width:'100%'}}
-                      >
-                      <Form.Item
-                          name="auction_name"
-                          rules={[{ required: true, message: 'Hãy nhập tên đấu giá' }]}
-                          label="Tên đấu giá"
-                          initialValue={ auction.title }
-                      >
-                          <Input
-                          placeholder="Tên cuộc đấu giá"
-                          className='el-input'
-                          size="large"
-                          />
-                      </Form.Item>
-                      <Form.Item
-                          name="category"
-                          label="Danh mục"
-                      >
-                          <Cascader 
-                            size="large" 
-                            options={listCategory} 
-                            onChange={(key)=>{console.log(key)}}
-                            placeholder="Chọn danh mục" 
-                            placement="bottomRight"
-                            dropdownMenuColumnStyle={{width:'550px', height:'42px', fontSize:'17px'}}
-                            />
-                      </Form.Item>
-                      <Row justify="space-between">
-                          <Form.Item
-                              name="startAt"
-                              label="Bắt đầu"
-                              style={{width:"45%"}}
-                              
-                          >
-                              <DatePicker
-                              ranges={{
-                                  Today: [moment(), moment()],
-                                  'This Month': [moment().startOf('month'), moment().endOf('month')],
-                              }}
-                              showTime
-                              format="YYYY/MM/DD HH:mm:ss"
-                              onChange={onChange}
-                              style={{width:'100%'}}
-                              size='large'
-                              placeholder="Start time"
-                              />
-                          </Form.Item>
-                          <Form.Item
-                              name="endAt"
-                              label="Kết thúc"
-                              style={{width:"45%"}}
-                              
-                          >
-                              <DatePicker
-                              ranges={{
-                                  Today: [moment(), moment()],
-                                  'This Month': [moment().startOf('month'), moment().endOf('month')],
-                              }}
-                              size='large'
-                              showTime
-                              format="YYYY/MM/DD HH:mm:ss"
-                              onChange={onChange}
-                              style={{width:'100%'}}
-                              placeholder="End time"
-                              />
-                          </Form.Item>
-                      </Row>
-                      </Form>
-                  </Col>
+            <div className="highest-bid" style={{ width: '100%' }}>
+              {
+                maxBid === null
+                  ?
+                  <div className="highest-bid_title nft-body-base">Chưa có người tham gia</div>
+                  :
+                  <div style={{ width: '100%' }}>
+                    <Row justify="space-between">
+                      <div className="highest-bid_title nft-body-base" >Giá cao nhất</div>
+                      <div className="highest-bid_price">
+                        <NumberFormat value={maxBid} displayType={'text'} thousandSeparator={true} />
+                      </div>
+                    </Row>
+
+                  </div>
+
+              }
+            </div>
+
+            <div className="detail-button">
+              <div className="w-100">
+                {
+                  Number(seller.selling_user_id) === Number(userId)
+                    ?
+                    auction.statusId === 1 || auction.statusId === 3 
+                      ?
+                      <button className="el-button-custom" >
+                        <span>Chấp nhận giá cao nhất</span>
+                      </button>
+                      :
+                      auction.statusId === 2 
+                        ?
+                        <button className="el-button-custom" disabled>
+                          <span>Đấu giá sắp diễn ra</span>
+                        </button>
+                        :
+                        auction.statusId === 4
+                          ?
+                          <button className="el-button-custom" onClick={showEditAuction}>
+                            <span>Sửa đấu giá</span>
+                          </button>
+                          :
+                          <button className="el-button-custom" disabled>
+                            <span>Đấu giá bị từ chối</span>
+                          </button>
+                    :
+                    auction.statusId === 1
+                      ?
+                      <button className="el-button-custom" onClick={showModalBid}>
+                        <span>Đấu Giá</span>
+                      </button>
+                      :
+                      <button className="el-button-custom" disabled={true}>
+                        <span>Không bán</span>
+                      </button>
+                }
+
+              </div>
+            </div>
+          </div>
+        </Row>
+        <Row className="tabs pro-flex">
+          <div
+            className={
+              tabActive === 'BIDS'
+                ? "tab-active text-desc cursor tab-item nft-body-base"
+                : "text-desc cursor tab-item nft-body-base"
+            }
+            onClick={() => {
+              setTabActive("BIDS")
+            }}
+          > Danh sách đấu giá</div>
+
+          <div
+            className={
+              tabActive === 'COMMENTS'
+                ? "tab-active text-desc cursor tab-item nft-body-base"
+                : " text-desc cursor tab-item nft-body-base"
+            }
+
+            onClick={() => {
+              setTabActive("COMMENTS")
+            }}
+          >Bình luận</div>
+
+        </Row>
+        {
+          tabActive === 'BIDS' ?
+
+            <Row className="list-bid" justify="center">
+              <table className="table w-100">
+                <tr className="w-100 row ">
+                  <th className="col1 title-head" >Người đấu giá</th>
+                  <th className="col2 title-head">Giá</th>
+                </tr>
+
+                {
+                  listBid.length > 0
+                    ?
+                    listBid?.map((bid) => (
+                      <tr className="w-100 row">
+                        <td className="col1">
+                          <div className="wrap-media">
+                            <div className="content-media">
+                              <img src={bid.user_avatar} alt="avatar bidder" />
+                            </div>
+                          </div>
+                          <div><span>{bid.user_name}</span></div>
+                        </td>
+                        <td className="col2">
+                          <div>
+                            <span><NumberFormat value={bid.price} displayType={'text'} thousandSeparator={true} /></span>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+
+                    :
+                    <Row justify="center" style={{ width: '100%' }}>
+                      <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
+                    </Row>
+                }
+
+              </table>
+            </Row>
+            :
+            <Row style={{ width: "100%" }}>
+              {/* {comments.length > 0 && <CommentList comments={comments} />} */}
+              <Row style={{ width: "100%" }}>
+                <Comment
+                  avatar={<Avatar src={avatar} alt="Han Solo" />}
+                  content={
+                    <Editor
+                      onChange={handleChange}
+                      onSubmit={handleSubmit}
+                      submitting={submitting}
+                      value={value}
+                    />
+                  }
+                  style={{ width: '600px' }}
+                />
               </Row>
-          </Col>
 
+
+              <List
+                className="comment-list"
+                header={`${totalComments} replies`}
+                itemLayout="horizontal"
+                dataSource={comments}
+                renderItem={item => (
+                  <li>
+                    <Comment
+                      author={item.user_name}
+                      avatar={item.user_avatar}
+                      content={item.content}
+                      datetime={item.updated_at}
+                    />
+                  </li>
+                )}
+              />
+            </Row>
+        }
+        <Row style={{ margin: '50px 0' }}></Row>
+      </Col>
+      <div style={{ fontSize: '35px' }}>
+        <Modal
+          title="Đấu Giá"
+          centered
+          visible={popUpBid}
+          onCancel={hideModalBid}
+          width={500}
+          footer={[
+            <button
+              className="btn-bid-cancel"
+              onClick={hideModalBid}
+            >
+              Hủy
+            </button>,
+            <button
+              className="btn-bid"
+              onClick={placeABid}
+            >
+              Đặt Giá
+            </button>,
+          ]}
+        >
+          <div style={{ padding: '0 0' }}>
+            <div style={{ marginBottom: '10px' }}>
+              <div className="text-detail-bid ">
+                Bạn săp trả giá cho <b>{item.name}</b>
+              </div>
             </div>
-          </Modal>
-        </div>
-        <ul className="el-dropdown-menu el-popper dropdown-dot-nft"
+            <InputNumber type="text" placeholder="Đặt giá" className="el-input-bid" controls={false} keyboard={false} value={yourPrice} onChange={setYourBid} />
+
+          </div>
+        </Modal>
+      </div>
+
+      <div style={{ fontSize: '35px' }}>
+        <Modal
+          title="Sửa Đấu Giá"
+          centered
+          visible={popUpEditAuction}
+          onCancel={hideEditAuction}
+          width={600}
+          footer={[
+            <button
+              className="btn-bid-cancel"
+              onClick={hideEditAuction}
+            >
+              Hủy
+            </button>,
+            <button
+              className="btn-bid"
+              onClick={hideEditAuction}
+            >
+              Sửa
+            </button>,
+          ]}
+        >
+          <div style={{ padding: '0 0' }}>
+            <Col style={{ width: '100%' }}>
+              <Row justify="center" style={{ display: "flex", justifyContent: "center", marginTop: "1em" }}>
+                <Col style={{ width: '100%' }}>
+                  <Form
+                    name="create_auction_form"
+                    className="signup-form"
+                    initialValues={{ remember: true }}
+                    onFinish={onFinish}
+                    layout='vertical'
+                    size='middle'
+                    style={{ width: '100%' }}
+                  >
+                    <Form.Item
+                      name="auction_name"
+                      rules={[{ required: true, message: 'Hãy nhập tên đấu giá' }]}
+                      label="Tên đấu giá"
+                      initialValue={auction.title}
+                    >
+                      <Input
+                        placeholder="Tên cuộc đấu giá"
+                        className='el-input'
+                        size="large"
+                      />
+                    </Form.Item>
+                    <Form.Item
+                      name="category"
+                      label="Danh mục"
+                      initialValue={category.type}
+                    >
+                      <Cascader
+                        size="large"
+                        options={listCategory}
+                        onChange={(key) => { console.log(key) }}
+                        placeholder="Chọn danh mục"
+                        placement="bottomRight"
+                        dropdownMenuColumnStyle={{ width: '535px', height: '42px', fontSize: '17px' }}
+                      />
+                    </Form.Item>
+                    <Row justify="space-between">
+                      <Form.Item
+                        name="startAt"
+                        label="Bắt đầu"
+                        style={{ width: "45%" }}
+
+                      >
+                        <DatePicker
+                          ranges={{
+                            Today: [moment(), moment()],
+                            'This Month': [moment().startOf('month'), moment().endOf('month')],
+                          }}
+                          showTime
+                          format="YYYY/MM/DD HH:mm:ss"
+                          onChange={onChange}
+                          style={{ width: '100%' }}
+                          size='large'
+                          placeholder="Start time"
+                        />
+                      </Form.Item>
+                      <Form.Item
+                        name="endAt"
+                        label="Kết thúc"
+                        style={{ width: "45%" }}
+
+                      >
+                        <DatePicker
+                          ranges={{
+                            Today: [moment(), moment()],
+                            'This Month': [moment().startOf('month'), moment().endOf('month')],
+                          }}
+                          size='large'
+                          showTime
+                          format="YYYY/MM/DD HH:mm:ss"
+                          onChange={onChange}
+                          style={{ width: '100%' }}
+                          placeholder="End time"
+                        />
+                      </Form.Item>
+                    </Row>
+                  </Form>
+                </Col>
+              </Row>
+            </Col>
+
+          </div>
+        </Modal>
+      </div>
+      <ul className="el-dropdown-menu el-popper dropdown-dot-nft"
         style={menuDisplay ? {
           transformOrigin: "center top",
           zIndex: "2008",
           position: "absolute",
           top: "168px",
           left: "1158px",
-        } : {display:'none'}}>
-          <li tabIndex={-1} className='el-dropdown-menu__item text-drop-nft' style={{fontSize:'16px'}} onClick={showEditAuction}>
-            <span>Sửa đấu giá</span>
-          </li>
-        </ul>
-      </Row>
+        } : { display: 'none' }}>
+        {
+          Number(seller.selling_user_id) === Number(userId)
+            ?
+            <>
+              <li tabIndex={-1} className='el-dropdown-menu__item text-drop-nft' style={{ fontSize: '16px' }} onClick={showEditAuction}>
+                <span>Sửa đấu giá</span>
+              </li>
+              <li tabIndex={-1} className='el-dropdown-menu__item text-drop-nft' style={{ fontSize: '16px' }} onClick={showEditAuction}>
+                <span>Sửa vật phẩm</span>
+              </li>
+              <li tabIndex={-1} className='el-dropdown-menu__item text-drop-nft' style={{ fontSize: '16px' }} onClick={confirmDeleteAuction}>
+                <span>Xóa đấu giá</span>
+              </li>
+            </>
+            :
+            <>
+            </>
+        }
 
-    );
-   
+        <li tabIndex={-1} className='el-dropdown-menu__item text-drop-nft' style={{ fontSize: '16px' }} onClick={hideEditAuction}>
+          <span>Thoát</span>
+        </li>
+      </ul>
+    </Row>
+
+  );
+
 }
 
 export default AuctionDetail;

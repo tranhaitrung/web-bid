@@ -16,6 +16,10 @@ export default function ListAuction() {
 
     const optionAuctionStatus = [
         {
+            value: '0',
+            label: 'Tất cả đấu giá',
+        },
+        {
             value: '1',
             label: 'Đang diễn ra',
         },
@@ -66,7 +70,7 @@ export default function ListAuction() {
 
     useEffect(() => {
         apis.auction
-            .listAuction(1,8)
+            .listAuction(0,1,8, '', '', '')
             .then((res) => {
                 var data = res.data.data;
                 setListAuction(data.auctions);
@@ -86,7 +90,6 @@ export default function ListAuction() {
                     cates.push(tmp);
                     
                 }
-                console.log(cates);
                 setListCategory(cates);
             })
     }, []);

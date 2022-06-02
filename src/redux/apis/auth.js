@@ -14,7 +14,7 @@ export default {
         return axios.post(`${URL_DOMAIN}/api/signup`, data);
     },
     logOut: ()=> {
-        return axios.post(`${URL_DOMAIN}/api/logout`, configHeader);
+        return axios.post(`${URL_DOMAIN}/api/logout`,null, configHeader);
     },
     changePass: (data) => {
         return axios.post(`${URL_DOMAIN}/api/changepass`, data, configHeader);

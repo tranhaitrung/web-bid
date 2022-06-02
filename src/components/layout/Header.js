@@ -1,39 +1,18 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Col, Row, Image, Badge, Avatar, Dropdown, Menu} from "antd";
 import { BellOutlined , UserOutlined } from '@ant-design/icons';
 import { Link } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { useHistory } from "react-router";
+import { useDispatch, useSelector } from "react-redux";
+import { logOut } from '../../redux/actions/auth';
 
 import './Header.css';
-
-const dropDownNotify = (
-  <Menu
-    items={[
-      {
-        label: <a href="https://www.antgroup.com">1st menu item</a>,
-        key: '0',
-      },
-      {
-        label: <a href="https://www.aliyun.com">2nd menu item</a>,
-        key: '1',
-      },
-      {
-        label: '3rd menu item',
-        key: '2',
-      },
-      {
-        label: '4rd menu item',
-        key: '3',
-      },
-      {
-        label: '5rd menu item',
-        key: '4',
-      },
-    ]}
-  />
-);
+import apis from '../../redux/apis';
 
 function Header() {
+
+  const history = useHistory();
+  const dispacth = useDispatch();
 
   const email = useSelector((state) => state.auth.email);
   const userId = useSelector((state) => state.auth.userId);
@@ -42,17 +21,46 @@ function Header() {
   const name = useSelector((state) => state.auth.name);
   const id = useSelector((state) => state.auth.id);
 
+  const [listNotify, setListNotify] = useState([]);
+  const [totalNotify, setTotalNotify] = useState()
+
   const path = window.location.pathname;
+
+  const dropDownNotify = (
+    <Menu
+      items={listNotify}
+    />
+  );
+  
   
   const logout = () => {
-    localStorage.setItem("token", null);
-    localStorage.setItem("exp", 0);
-    localStorage.setItem("avatar", null);
-    localStorage.setItem("role_id", null);
-    localStorage.setItem("user_id", null);
-    localStorage.setItem("email", null);
-    localStorage.setItem("name", null);
+    dispacth(logOut(history))
   }
+
+  const getListNotify=() =>{ 
+    apis.notifications
+        .getNotifications('',0,1000)
+        .then(res => {
+          var data = res.data;
+          var notifies = res.data.data.denys
+          setTotalNotify(res.data.data.total_not_read)
+          var arrTmp = []
+          for (var i = 0; i < notifies.length; i++) {
+              var noti = {
+                label: notifies[i].reason,
+                key: notifies[i].type
+              }
+              arrTmp.push(noti)
+          }
+          setListNotify(arrTmp)
+        })
+  }
+
+  useEffect(()=>{
+    if (isLogin) {
+      getListNotify()
+    }
+  }, [])
 
   const dropDownAvatar = (
     <Menu
@@ -93,7 +101,7 @@ function Header() {
                 <Row align="middle" style={{display:"flex", justifyContent: "right", width:'100%'}}>
                   <Col span={3}>
                     <Dropdown overlay={dropDownNotify} trigger={['click']} placement="bottom">
-                      <Badge count={5} size='small'>
+                      <Badge count={totalNotify} size='small'>
                         <BellOutlined style={{fontSize:'22px'}} className='notify' />
                       </Badge>
                     </Dropdown> 
@@ -145,27 +153,6 @@ function Header() {
           </Row>
           
           <hr style={{color:""}}/>
-          
-          {/* <Row style={{padding: "5px 26px", fontSize:"1.3em"}} justify="space-around" align="middle">
-            <Col span={3} > <Link to={'/'}  style={{color:'black'}}>Trang chủ </Link></Col>
-            <Col span={2} > <Link to={'/dien-thoai'}  style={{color:'black'}}>Điện thoại </Link></Col>
-            <Col span={2} > <Link to={'/laptop'}  style={{color:'black'}}>Laptop</Link></Col>
-            <Col span={2} > <Link to={'/thoitrang'}  style={{color:'black'}}>Thời trang </Link></Col>
-            <Col span={2} > <Link to={'/oto-xemay'}  style={{color:'black'}}>Ô tô - Xe máy</Link></Col>
-            <Col span={2} > <Link to={'/tong-hop'}  style={{color:'black'}}>Tổng hợp </Link></Col>
-
-            <Col span={7} style={{display:"flex", justifyContent: "right"}}>
-              <Space>
-                <Input placeholder='Tìm kiếm tên đấu giá' style={{width: "290px"}}/>
-                <Button
-                  type='primary'
-                  icon={<SearchOutlined />}
-                >
-                  Tìm kiếm
-                </Button>
-              </Space>
-            </Col>
-          </Row> */}
 
         </div>
     );

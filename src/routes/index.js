@@ -11,6 +11,7 @@ import AdminRouter from './AdminRouter';
 import ListAuction from '../components/auctions/ListAuction';
 import AuctionDetail from '../components/auctions/AuctionDetail';
 import UserAuction from '../components/auctions/UserAuction';
+import CreateItem from '../components/auctions/CreateItem';
 
 import 'antd/dist/antd.css';
 
@@ -32,6 +33,9 @@ function AppRoute() {
             </Route>
             <Route path={"/admin"}>
                 <AdminRouter />
+            </Route>
+            <Route path={"/auction/:auctionId/create-item"}>
+                <CreateItem />
             </Route>
             <Route path={"/auctions/detail/:auctionId"}>
                 <AuctionDetail />

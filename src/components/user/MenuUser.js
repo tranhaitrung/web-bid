@@ -11,7 +11,6 @@ import { ShoppingCartOutlined,KeyOutlined, ProfileOutlined } from '@ant-design/i
 const menu = [
   { icon: <UserOutlined/>, label: 'Thông tin tài khoản', path: '/account/info' },
   { icon: <KeyOutlined/>, label: 'Đổi mật khẩu', path: '/account/change-pass' },
-  { icon: <ShoppingCartOutlined/>, label: 'Mua gói đấu giá', path: '/account/buy-bid-package' },
   { icon: <ProfileOutlined/>, label: 'Tạo cuộc đấu giá', path: '/account/create-auctions' },
 ];
 
