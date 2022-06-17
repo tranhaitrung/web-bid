@@ -4,7 +4,7 @@ import { HeartOutlined, MoreOutlined, ExclamationCircleOutlined } from '@ant-des
 import moment from 'moment';
 import NumberFormat from 'react-number-format';
 import { Route, useParams } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { useHistory } from "react-router-dom";
 // import { Link } from 'react-router-dom';
 
@@ -12,6 +12,7 @@ import apis from "../../redux/apis";
 import { currencyFormat } from "../../common/Format"
 
 import './Detail.css'
+import { END_LOADING, START_LOADING } from "../../redux/constants/ActionType";
 
 const onFinish = (values) => {
   console.log('Received values of form: ', values);
@@ -40,6 +41,7 @@ const Editor = ({ onChange, onSubmit, submitting, value }) => (
 
 function AuctionDetail() {
 
+  const dispatch = useDispatch();
   const history = useHistory();
 
   const [tabActive, setTabActive] = useState("BIDS");
@@ -52,15 +54,19 @@ function AuctionDetail() {
   const [totalLikeAuction, setTotalLikeAuction] = useState();
   const [listCategory, setListCategory] = useState([]);
   const [submitting, setSubmitting] = useState(false);
-  const [value, setValue] = useState([]);
+  const [comment, setComment] = useState([]);
   const [popUpBid, setPopUpBid] = useState(false);
   const [popUpEditAuction, setPopUpEditAuction] = useState(false);
+  const [popUpAcceptBid, setPopUpAcceptBid] = useState(false);
   const [comments, setComments] = useState([]);
   const [totalComments, setTotalComment] = useState();
   const userId = useSelector((state) => state.auth.userId);
   const avatar = useSelector((state) => state.auth.avatar);
   const [listBid, setListBid] = useState([]);
   const [yourPrice, setYourBid] = useState();
+  const [sellingInfo, setSellingInfo] = useState();
+  const [lastCommentId, setLastCommentId] = useState();
+  const isLoading = useSelector((state) => state.loading.isLoading);
 
   const { auctionId } = useParams();
 
@@ -71,13 +77,7 @@ function AuctionDetail() {
 
   function initData() {
     auctionDetail()
-
-    apis.auction.totalLikeAuction(auctionId)
-      .then((res) => {
-        var data = res.data.data.total_liked;
-        setTotalLikeAuction(data);
-      })
-
+    totalLike()
     apis.categories
       .listCategory()
       .then(res => {
@@ -88,21 +88,26 @@ function AuctionDetail() {
             value: data[i].category_id,
             label: data[i].name,
           }
+          setLastCommentId(data[i].comment_id)
           ctgs.push(ctg);
         }
         setListCategory(ctgs);
       }
       )
 
-    apis.comment
-      .listComment(auctionId, 0, 100)
-      .then(res => {
-        var data = res.data.data;
-        setTotalComment(data.total)
-        setComments(data.comments)
-      })
+    getListComment()
 
     getListBid()
+  }
+  
+  const getListComment = () => {
+    apis.comment
+    .listComment(auctionId, 0, 100)
+    .then(res => {
+      var data = res.data.data;
+      setTotalComment(data.total)
+      setComments(data.comments)
+    })
   }
 
   function auctionDetail() {
@@ -123,6 +128,14 @@ function AuctionDetail() {
         setMaxBid(maxBid);
         console.log(seller)
       })
+  }
+
+  const totalLike = () => {
+    apis.auction.totalLikeAuction(auctionId)
+    .then((res) => {
+      var data = res.data.data.total_liked;
+      setTotalLikeAuction(data);
+    })
   }
 
   function getListBid() {
@@ -152,39 +165,64 @@ function AuctionDetail() {
     setPopUpEditAuction(false);
   };
 
+  function showModalAcceptBid () {
+    setPopUpAcceptBid(true)
+  }
+
+  function hideModalAcceptBid () {
+    setPopUpAcceptBid(false)
+  }
+
   function changeTab(text) {
     setTabActive(text)
   }
 
-  function handleSubmit() {
-    if (!value) {
+  function handleSubmitComment() {
+    if (!comment) {
       return;
     }
-
     setSubmitting(true)
+    var body = {
+      content: comment,
+      comment_last_id: lastCommentId
+    }
 
-    setTimeout(() => {
-      this.setState({
-        submitting: false,
-        value: '',
-        comments: [
-          ...comments,
-          {
-            author: 'Han Solo',
-            avatar: 'https://joeschmoe.io/api/v1/random',
-            content: <p>{value}</p>,
-            datetime: moment().fromNow(),
-          },
-        ],
-      });
-    }, 1000);
+    apis.comment
+        .createComment(auctionId, body)
+        .then(res => {
+          var data = res.data;
+          if (data.code === 1000) {
+            getListComment()
+          }
+          else if (data.code === 1004) {
+            message.error("BẠN CẦN ĐĂNG NHẬP ĐỂ THỰC HIỆN CHỨC NĂNG NÀY")
+            history.push(`/login`)
+          }
+          else if (data.code === 1008) {
+            message.error("KHÔNG THỂ BÌNH LUẬN CHO ĐẤU GIÁ NÀY")
+          }
+          setComment('')
+          setSubmitting(false)
+        })
+        .catch(err => {
+          if (err.response.status === 401) {
+            message.error("BẠN CẦN ĐĂNG NHẬP ĐỂ THỰC HIỆN CHỨC NĂNG NÀY")
+            history.push(`/login`)
+          }
+          else if (err.response.status === 500) {
+            message.error("INTERNAL SERVER")
+          }
+          setSubmitting(false)
+        })
+    
   };
 
   function handleChange(e) {
-    setValue(e.target.value)
+    setComment(e.target.value)
   };
 
   function placeABid() {
+    dispatch({ type: START_LOADING });
     const body = {
       "price": yourPrice,
       "bid_last_id": null
@@ -206,12 +244,18 @@ function AuctionDetail() {
         }
 
         if (res.data.code === 1001) {
-          message.error(res.data.message)
+          if (res.data.message === 'price: 7014') {
+            message.error("Giá phải cao hơn giá hiện tại")
+          } else {
+            message.error(res.data.message)
+          }
+          
         }
         if (res.data.code === 1004) {
           message.error("Bạn cần phải đăng nhập để sử dụng tính năng này")
           history.push("/login")
         }
+        dispatch({ type: END_LOADING });
 
       })
       .catch(e => {
@@ -222,7 +266,7 @@ function AuctionDetail() {
         if (e.response.status >= 500) {
           message.error("INTERNAL SERVER")
         }
-
+        dispatch({ type: END_LOADING });
       })
 
   }
@@ -268,6 +312,73 @@ function AuctionDetail() {
     });
   };
 
+  const setReason = (value) => {
+    console.log()
+  }
+
+  const favourite = () => {
+    apis.auction
+        .likeAuction(auctionId)
+        .then(res => {
+          var data = res.data;
+          if (data.code === 1000) {
+            auctionDetail()
+            totalLike()
+          }
+          if (data.code === 1004) {
+            message.error("BẠN CẦN ĐĂNG NHẬP ĐỂ SỬ DỤNG TÍNH NĂNG NÀY")
+            history.push(`/login`)
+          }
+        })
+        .catch(err => {
+          if (err.response.status === 401) {
+            message.error("BẠN CẦN ĐĂNG NHẬP ĐỂ SỬ DỤNG TÍNH NĂNG NÀY")
+            history.push(`/login`)
+          }
+          if (err.response.status === 500) {
+            message.error("INTERNAL SERVER")
+          }
+        })
+  }
+
+  const acceptBid = () => {
+    var body = {
+      selling_info: document.getElementById('reason').value
+    }
+    apis.auction
+        .acceptHighestBid(auctionId, body)
+        .then(res => {
+          var data = res.data;
+          if (data.code === 1000) {
+            message.success("CHẤP NHẬN ĐẤU GIÁ THÀNH CÔNG")
+          }
+          else if (data.code === 1001) {
+            message.error("CHƯA NHẬP LÝ DO CHẤP NHẬN")
+          }
+          else if (data.code === 1004) {
+            message.error("Bạn cần đăng nhập để thực hiện chức năng này")
+            history.push(`/login`)
+          }
+          else if (data.code === 1006) {
+            message.error("BẠN KHÔNG PHẢI NGƯỜI BÁN")
+          }
+          else if (data.code === 1009) {
+            message.error("ĐẤU GIÁ CHƯA KẾT THÚC")
+          }
+          else if (data.code === 1010) {
+            message.error("VẬT PHẨM ĐÃ ĐƯỢC BÁN")
+          }
+          else if (data.code === 1011) {
+            message.error("KHÔNG CÓ NGƯỜI TRẢ GIÁ")
+          }
+          hideModalAcceptBid()
+        })
+        .catch(err => {
+          hideModalAcceptBid()
+        })
+        
+  }
+
   return (
     <Row justify="center">
       <Col className="detail">
@@ -296,7 +407,7 @@ function AuctionDetail() {
 
               <Row className="pro-flex">
                 <div className="btn-action-detail border-left d-flex aign-center pro-flex favourite" style={{ fontSize: '20px' }}>
-                  <HeartOutlined className='cursor' />
+                  <HeartOutlined className='cursor' onClick={favourite}/>
                   <span style={{ marginLeft: '5px' }} className='align-center pro-flex'>{totalLikeAuction}</span>
                 </div>
                 <div
@@ -396,9 +507,14 @@ function AuctionDetail() {
                 {
                   Number(seller.selling_user_id) === Number(userId)
                     ?
-                    auction.statusId === 1 || auction.statusId === 3 
+                    auction.statusId === 1
+                    ?
+                    <button className="el-button-custom" >
+                        <span>Đấu giá đang diễn ra</span>
+                      </button>
+                    : auction.statusId === 3 
                       ?
-                      <button className="el-button-custom" >
+                      <button className="el-button-custom" onClick={showModalAcceptBid}>
                         <span>Chấp nhận giá cao nhất</span>
                       </button>
                       :
@@ -506,9 +622,9 @@ function AuctionDetail() {
                   content={
                     <Editor
                       onChange={handleChange}
-                      onSubmit={handleSubmit}
+                      onSubmit={handleSubmitComment}
                       submitting={submitting}
-                      value={value}
+                      value={comment}
                     />
                   }
                   style={{ width: '600px' }}
@@ -550,23 +666,77 @@ function AuctionDetail() {
             >
               Hủy
             </button>,
-            <button
+            <Button
+              loading={isLoading}
               className="btn-bid"
+              style={{height: '100%'}}
               onClick={placeABid}
             >
               Đặt Giá
-            </button>,
+            </Button>,
           ]}
         >
           <div style={{ padding: '0 0' }}>
             <div style={{ marginBottom: '10px' }}>
               <div className="text-detail-bid ">
-                Bạn săp trả giá cho <b>{item.name}</b>
+                Bạn sắp trả giá cho <b>{item.name}</b>
               </div>
             </div>
             <InputNumber type="text" placeholder="Đặt giá" className="el-input-bid" controls={false} keyboard={false} value={yourPrice} onChange={setYourBid} />
 
           </div>
+        </Modal>
+      </div>
+
+      <div>
+      <Modal
+          title="CHẤP THUẬN ĐÂU GIÁ"
+          centered
+          visible={popUpAcceptBid}
+          onCancel={hideModalAcceptBid}
+          width={600}
+          footer={[
+            <button
+              className="btn-bid-cancel"
+              onClick={hideModalAcceptBid}
+            >
+              Hủy
+            </button>,
+            <button
+              className="btn-bid"
+              onClick={acceptBid}
+            >
+              Chấp thuận
+            </button>,
+          ]}
+        >
+          <div>
+            <div>
+              <h1>Chấp thuận giá cao nhất</h1>
+            </div>
+            <Form
+              name="accept_highest_bid"
+              initialValues={{ remember: true }}
+              onFinish={onFinish}
+              layout='vertical'
+              size='middle'
+              style={{ width: '100%' }}
+            >
+              <Form.Item
+                name="selling_info"
+                rules={[{ required: true, message: 'Nhập lý do' }]}
+                label="Lý do chấp thuận"
+              >
+                <Input
+                  placeholder="Lý do chấp thuận"
+                  className='el-input'
+                  size="large"
+                  id='reason'
+                />
+              </Form.Item>
+            </Form>
+          </div>
+
         </Modal>
       </div>
 
@@ -685,7 +855,7 @@ function AuctionDetail() {
           zIndex: "2008",
           position: "absolute",
           top: "168px",
-          left: "1158px",
+          left: "1155px",
         } : { display: 'none' }}>
         {
           Number(seller.selling_user_id) === Number(userId)

@@ -23,6 +23,10 @@ export default {
         return axios.get(`${URL_DOMAIN}/api/auctions/${statusId}?index=${index}&count=${count}&user_id=${userId}&type=${typeId}&category_id=${categoryId}`, configHeader);
     },
 
+    searchAuction: (type,key) => {
+        return axios.get(`${URL_DOMAIN}/api/search?type=${type}&key=${key}`, configHeader);
+    },
+
     listAuctionByStatus: (statusId,index, count) => {
         return axios.get(`${URL_DOMAIN}/api/auctions/listAuctionsByStatus/${statusId}?index=${index}&count=${count}`);
     },
@@ -40,11 +44,11 @@ export default {
     },
 
     auctionDetail: (auctionId) => {
-        return axios.get(`${URL_DOMAIN}/api/auctions/detail/${auctionId}`);
+        return axios.get(`${URL_DOMAIN}/api/auctions/detail/${auctionId}`, configHeader);
     },
 
     likeAuction: (auctionId)=> {
-        return axios.get(`${URL_DOMAIN}/api/updateLike/${auctionId}`, configHeader);
+        return axios.post(`${URL_DOMAIN}/api/updateLike/${auctionId}`, '', configHeader);
     },
 
     totalLikeAuction: (auctionId) => {
@@ -57,5 +61,9 @@ export default {
 
     bid: (auctionId, data) => {
         return axios.post(`${URL_DOMAIN}/api/bids/create/${auctionId}`, data, configHeader);
+    },
+    
+    acceptHighestBid: (auctionId, data) => {
+        return axios.post(`${URL_DOMAIN}/api/accept/${auctionId}`, data, configHeader);
     }
 }

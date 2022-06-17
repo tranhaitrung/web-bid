@@ -14,7 +14,8 @@ function HomePage() {
     const [listAuction, setListAuction] = useState()
     const [listCategory, setListCategory] =useState()
     const [listCategoryFilter, setListCategoryFilter] = useState([])
-    const [params, setParams] = useState([])
+    const [paramStatus, setParamStatus] = useState([]) 
+    const [paramCategory, setParamCategory] = useState()        
 
     useEffect( ()=>{
         apis.auction
@@ -88,21 +89,18 @@ function HomePage() {
     var mapParam = new Map()
       
     function onChangeStatus(value) {
-        console.log(value)
-        mapParam.set("statusId", value)
-        setParams(mapParam)
-        callApi()
+        setParamStatus(value)
+        callApi(value, paramCategory)
     }
 
     function onChangeCategory(value) {
-        mapParam.set("categoryId", value)
-        setParams(mapParam)
-        callApi()
+        setParamCategory(value)
+        callApi(paramStatus, value)
     }
 
-    function callApi() {
-        const statusId = mapParam.get("statusId") === null ? 0 : mapParam.get("statusId")
-        const categoryId = mapParam.get("categoryId") === null ? '' : mapParam.get("categoryId")
+    function callApi(paramStatusId, paramCategoryId) {
+        const statusId = (paramStatusId === null || paramStatusId === undefined || paramStatusId === '') ? 0 : paramStatusId
+        const categoryId = (paramCategoryId === null || paramCategoryId === undefined ) ? '' : paramCategoryId
         const typeId = ''
         const userId = ''
         const page = 1
@@ -143,9 +141,9 @@ function HomePage() {
                             }
                         </Row>
                         <Row justify="center" style={{width:'1200px'}}>
-                            <button className="button-load-more nft-header6">
+                            {/* <button className="button-load-more nft-header6">
                                 Xem thêm
-                            </button>
+                            </button> */}
                         </Row>
                     </Row>
 

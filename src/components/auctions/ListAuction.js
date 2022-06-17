@@ -13,6 +13,10 @@ export default function ListAuction() {
     const [listAuction, setListAuction] = useState();
     const [totalAuction, setTotalAuction] = useState();
     const [listCategory, setListCategory] = useState();
+    const [paramSearch, setParamSearch] = useState('');
+    const [paramStatus, setParamStatus] = useState('');
+    const [paramCategory, setParamCategory] = useState('');
+
 
     const optionAuctionStatus = [
         {
@@ -44,29 +48,46 @@ export default function ListAuction() {
             label: 'Đã bán thành công',
         },
       ];
-      
-    function onChange(value) {
-    console.log(value);
+    
+
+    function onChangeSearch(value) {
+        setParamSearch(value)
+        getListAuction(paramStatus, paramCategory)
     }
 
-    const optionCategories = [
-    {
-        value: '1',
-        label: 'Nhà đất',
-    },
-    {
-        value: '2',
-        label: 'Ô tô - Xe máy',
-    },
-    ];
+    function onChangeStatus (value) {
+        var statusId = (value === undefined || value === null) ? 0 : value
+        setParamStatus(statusId)
+        getListAuction(statusId, paramCategory)
+    }
 
-    // function listAuction() {
-    //     var auctions = [];
-    //     for (var i = 0; i < 16 ; i++) {
-    //         auctions.push(<OnAuction/>)
-    //     }
-    //     return auctions;
-    // }
+    function onChangeCategory(value) {
+        var categoryId = (value === undefined || value === null) ? '' : value
+        setParamCategory(categoryId)
+        getListAuction(paramStatus, categoryId)
+    }
+
+    function onChangePage(value) {
+        apis.auction
+        .listAuction(paramStatus,value,8, '', '', paramCategory)
+        .then((res) => {
+            var data = res.data.data;
+            setListAuction(data.auctions);
+            setTotalAuction(data.total);
+        })
+    }
+
+    function getListAuction(statusId, categoryId) {
+        statusId = (statusId === undefined || statusId === null || statusId === '') ? 0 : statusId
+        categoryId = (categoryId === undefined || categoryId === null) ? '' :categoryId
+        apis.auction
+            .listAuction(statusId,1,8, '', '', categoryId)
+            .then((res) => {
+                var data = res.data.data;
+                setListAuction(data.auctions);
+                setTotalAuction(data.total);
+            })
+    }
 
     useEffect(() => {
         apis.auction
@@ -111,7 +132,10 @@ export default function ListAuction() {
                     <Input 
                     placeholder="Nhập tên đấu giá" 
                     size="large" 
+                    onChange={onChangeSearch}
                     prefix={<SearchOutlined style={{color:'#a19f9d'}}/>} 
+                    id= 'paramSearch'
+                    onWaiting={1000}
                     style={{
                         width:'300px', 
                         paddingRight: '36px',
@@ -120,8 +144,11 @@ export default function ListAuction() {
 
                     <Cascader 
                     size="large" 
-                    options={optionAuctionStatus} 
-                    onChange={onChange} 
+                    options={optionAuctionStatus}
+                    onChange={onChangeStatus} 
+                    value = { paramStatus }
+                    id = 'paramStatus'
+                    defaultValue={0}
                     placeholder="Trạng thái" 
                     style={{ 
                         marginRight: '20px',
@@ -133,9 +160,12 @@ export default function ListAuction() {
                     <Cascader 
                     size="large" 
                     options={listCategory} 
-                    onChange={onChange} 
+                    onChange={onChangeCategory} 
+                    value={paramCategory}
+                    id = 'paramCategory'
                     placeholder="Danh mục" 
                     style={{borderRadius:'8px'}}
+                
                     dropdownMenuColumnStyle= {{width: "170px"}}
                     />
                 </Row>
@@ -150,10 +180,11 @@ export default function ListAuction() {
                 <Row justify="end" style={{margin:'30px 15px'}}>
                     <Pagination
                     showSizeChanger
-                    //onShowSizeChange={onShowSizeChange}
+                    onChange={onChangePage}
+                    onShowSizeChange={onChangePage}
                     defaultPageSize={12}
                     defaultCurrent={1}
-                    total={totalAuction}
+                    total={totalAuction}              
                     pageSizeOptions={[12, 24, 48, 56]}
                     />
                 </Row>

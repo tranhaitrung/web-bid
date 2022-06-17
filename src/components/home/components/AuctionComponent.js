@@ -105,6 +105,28 @@ function AuctionComponent(props) {
         setPopUpBid(false);
         };
 
+    const favourite = () => {
+      console.log("API favourite")
+      apis.auction
+          .likeAuction(auctionId)
+          .then(res => {
+            var data = res.data;
+            if (data.code === 1004) {
+              message.error("BẠN CẦN ĐĂNG NHẬP ĐỂ SỬ DỤNG TÍNH NĂNG NÀY")
+              history.push(`/login`)
+            }
+          })
+          .catch (err => {
+            if (err.response.status === 401) {
+              message.error("BẠN CẦN ĐĂNG NHẬP ĐỂ SỬ DỤNG TÍNH NĂNG NÀY")
+              history.push(`/login`)
+            }
+            if (err.response.status === 500) {
+              message.error("INTERNAL SERVER")
+            }
+          })
+    }
+
     return (
         <>
         <Col className="item">
@@ -182,7 +204,7 @@ function AuctionComponent(props) {
                             <div className="text-hyperlink text-semibold cursor nft-header6">Xem chi tiết</div>
                         </Link>
                         <div style={{fontSize:'18px'}}>
-                            <HeartOutlined style={styleHeart} className='cursor' />
+                            <HeartOutlined style={styleHeart} className='cursor'  />
                             <span style={{marginLeft:'5px'}}> { totalLike } </span>
                         </div>
                     </Row>
@@ -211,7 +233,7 @@ function AuctionComponent(props) {
                             <div className="text-hyperlink text-semibold cursor nft-header6">Xem chi tiết</div>
                         </Link>
                         <div style={{fontSize:'18px'}}>
-                            <HeartOutlined style={styleHeart} className='cursor' />
+                            <HeartOutlined style={styleHeart} className='cursor' onClick={favourite} />
                             <span style={{marginLeft:'5px'}}> { totalLike } </span>
                         </div>
                     </Row>
