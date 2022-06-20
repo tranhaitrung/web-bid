@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { Col, Row, List, Comment, Avatar, Form, Button, Input, Empty, Modal, Cascader, DatePicker, InputNumber, message } from "antd";
+import { Col, Row, List, Comment, Avatar, Form, Button, Input, Empty, Modal, Cascader, DatePicker, InputNumber, message, Upload } from "antd";
 import { HeartOutlined, MoreOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
+import ImgCrop from 'antd-img-crop';
 import moment from 'moment';
 import NumberFormat from 'react-number-format';
 import { Route, useParams } from "react-router-dom";
@@ -49,6 +50,7 @@ function AuctionDetail() {
   const [auction, setAuction] = useState([]);
   const [category, setCategory] = useState([]);
   const [item, setItem] = useState([]);
+  const [itemEdit, setItemEdit] = useState([]);
   const [seller, setSeller] = useState([]);
   const [maxBid, setMaxBid] = useState();
   const [totalLikeAuction, setTotalLikeAuction] = useState();
@@ -58,6 +60,7 @@ function AuctionDetail() {
   const [popUpBid, setPopUpBid] = useState(false);
   const [popUpEditAuction, setPopUpEditAuction] = useState(false);
   const [popUpAcceptBid, setPopUpAcceptBid] = useState(false);
+  const [popUpEditItem, setPopUpEditItem] = useState(false);
   const [comments, setComments] = useState([]);
   const [totalComments, setTotalComment] = useState();
   const userId = useSelector((state) => state.auth.userId);
@@ -67,6 +70,11 @@ function AuctionDetail() {
   const [sellingInfo, setSellingInfo] = useState();
   const [lastCommentId, setLastCommentId] = useState();
   const isLoading = useSelector((state) => state.loading.isLoading);
+  const [fileList, setFileList] = useState([])
+  const [lisImg, setListImg] = useState([])
+  const [listBrand, setListBrand] = useState([])
+
+  var imageArray = []
 
   const { auctionId } = useParams();
 
@@ -96,8 +104,45 @@ function AuctionDetail() {
       )
 
     getListComment()
-
     getListBid()
+    getBranch()
+  }
+
+  const onChangeImg = ({ fileList: newFileList }) => {
+    setFileList(newFileList);
+  };
+
+  const upfile = ({file, onSuccess}) => {
+      const body = new FormData();
+      body.append("file", file);
+      apis.file
+          .upfile(body)
+          .then(res => {
+              imageArray = lisImg
+              onSuccess(res.data[0])
+              imageArray.push(res.data[0])
+              setListImg(imageArray)
+          })
+          .catch(()=>{
+              message.error("UPFILE FAIL")
+          })
+  }
+
+  const getBranch = () => {
+    apis.brand
+        .getListBrands()
+        .then(res => {
+            var data = res.data.data.brand
+            var listTmp = []
+            for(var i = 0; i < data.length; i++) {
+                const tmp = {
+                    value: data[i].brand_id,
+                    label: data[i].name
+                }
+                listTmp.push(tmp)
+            }
+            setListBrand(listTmp)
+        })
   }
   
   const getListComment = () => {
@@ -147,7 +192,25 @@ function AuctionDetail() {
       })
   }
 
+  const getItemInfo = () => {
+    const itemId = item.item_id;
+    apis.item
+        .infoItem(itemId)
+        .then(res => {
+          var data = res.data;
+          if (data.code === 1000) {
+            setItemEdit(data.data)
+            console.log(itemEdit)
+          }
+          if (data.code === 1004) {
+            message.error("BẠN CẦN ĐĂNG NHẬP")
+            history.push(`/login`)
+          }
+        })
+  }
+
   function showModalBid() {
+    setMenuDisplay(false);
     setPopUpBid(true);
   };
 
@@ -171,6 +234,16 @@ function AuctionDetail() {
 
   function hideModalAcceptBid () {
     setPopUpAcceptBid(false)
+  }
+
+  const showEditItem = () => {
+    setMenuDisplay(false);
+    getItemInfo()
+    setPopUpEditItem(true)
+  }
+
+  const hideEditItem = () => {
+    setPopUpEditItem(false)
   }
 
   function changeTab(text) {
@@ -377,6 +450,98 @@ function AuctionDetail() {
           hideModalAcceptBid()
         })
         
+  }
+
+  const editAuction = (value) => {
+    dispatch({ type: START_LOADING });
+
+    var auctionName = value.auction_name;
+    var categoryId = value.category;
+    var startDate = value.endAt;
+    var endDate = value.endAt;
+    var body = {
+      category_id: categoryId,
+      start_date: startDate,
+      end_date: endDate,
+      title_ni: auctionName
+    }
+
+    apis.auction
+        .editAuction(auctionId, body)
+        .then(res => {
+            var data = res.data;
+            if (data.code === 1000) {
+              message.success("SỬA ĐẤU GIÁ THÀNH CÔNG.")
+              auctionDetail()
+              hideEditAuction()
+            }
+            else if (data.code === 1001) {
+              message.error("NGÀY BẮT ĐẦU PHẢI SAU NGÀY HIỆN TẠI 1 NGÀY.")
+            }
+            else if (data.code === 1004) {
+              message.error("VUI LÒNG ĐĂNG NHẬP.")
+              history.push(`/login`)
+              hideEditAuction()
+            }
+            else if (data.code === 1005) {
+              message.error("ĐẤU GIÁ ĐÃ ĐƯỢC DUYỆT. KHÔNG THỂ CHỈNH SỬA.")
+            }
+            else if (data.code === 1006) {
+              message.error("KHÔNG CÓ QUYỂN SỬA.")
+            }
+            dispatch({ type: END_LOADING });
+        })
+        .catch(err => {
+          if (err.response.code === 401) {
+            message.error("Bạn cần đăng nhập để thực hiện tính năng này.")
+            history.push(`/login`)
+          }
+          if (err.response.code >= 500) {
+            message.error("INTERNAL SERVER")
+          }
+          dispatch({ type: END_LOADING });
+        })
+
+  }
+
+  const editItem = (values) => {
+    const name = values.itemName;
+        const starting_price = values.priceFrom
+        const brand_id = values.branch[0]
+        const description = values.description
+        const series = values.series
+        const images = lisImg
+
+        const bodyData = {
+            name: name,
+            starting_price: starting_price,
+            brand_id: brand_id,
+            description: description,
+            series: series,
+            images: images
+        }
+
+        const itemId = item.item_id;
+        apis.item
+            .editItem(itemId, bodyData)
+            .then(res => {
+                console.log(res.data)
+                var data = res.data
+                if (data.code === 1000) {
+                    message.success("Bạn đã sửa vật phẩm thành công")
+                    auctionDetail()
+                }
+            })
+            .catch(e =>{
+               var status = e.response.status
+               if (status === 401) {
+                   message.error("Bạn cần đăng nhập để sử dụng tính năng này")
+                   history.push(`/login`)
+               }
+               if (status === 500) {
+                   message.error("INTERNAL SERVER")
+               }
+            })
   }
 
   return (
@@ -747,30 +912,18 @@ function AuctionDetail() {
           visible={popUpEditAuction}
           onCancel={hideEditAuction}
           width={600}
-          footer={[
-            <button
-              className="btn-bid-cancel"
-              onClick={hideEditAuction}
-            >
-              Hủy
-            </button>,
-            <button
-              className="btn-bid"
-              onClick={hideEditAuction}
-            >
-              Sửa
-            </button>,
-          ]}
+          footer={false}
         >
           <div style={{ padding: '0 0' }}>
             <Col style={{ width: '100%' }}>
-              <Row justify="center" style={{ display: "flex", justifyContent: "center", marginTop: "1em" }}>
+              <Row justify="center" 
+              style={{ display: "flex", justifyContent: "center", marginTop: "1em" }}>
                 <Col style={{ width: '100%' }}>
                   <Form
                     name="create_auction_form"
                     className="signup-form"
                     initialValues={{ remember: true }}
-                    onFinish={onFinish}
+                    onFinish={editAuction}
                     layout='vertical'
                     size='middle'
                     style={{ width: '100%' }}
@@ -791,6 +944,7 @@ function AuctionDetail() {
                       name="category"
                       label="Danh mục"
                       initialValue={category.type}
+                      rules={[{ required: true, message: 'Chọn loại danh mục' }]}
                     >
                       <Cascader
                         size="large"
@@ -806,7 +960,7 @@ function AuctionDetail() {
                         name="startAt"
                         label="Bắt đầu"
                         style={{ width: "45%" }}
-
+                        rules={[{ required: true, message: 'Chọn ngày bắt đầu' }]}
                       >
                         <DatePicker
                           ranges={{
@@ -825,7 +979,7 @@ function AuctionDetail() {
                         name="endAt"
                         label="Kết thúc"
                         style={{ width: "45%" }}
-
+                        rules={[{ required: true, message: 'Chọn ngày kết thúc' }]}
                       >
                         <DatePicker
                           ranges={{
@@ -840,7 +994,138 @@ function AuctionDetail() {
                           placeholder="End time"
                         />
                       </Form.Item>
+                      <Row justify="end" style={{width:'100%'}}>
+                          <Col>
+                            <button
+                              className="btn-bid-cancel"
+                              onClick={hideEditAuction}
+                            >
+                              Hủy
+                            </button>
+                          </Col>
+                          <Col>
+                            <button className="btn-bid" loading={isLoading} >
+                              Sửa
+                            </button>
+                          </Col>
+                      </Row>
                     </Row>
+                  </Form>
+                </Col>
+              </Row>
+            </Col>
+
+          </div>
+        </Modal>
+
+        <Modal
+          title="SỬA VẬT PHẨM ĐẤU GIÁ"
+          centered
+          visible={popUpEditItem}
+          onCancel={hideEditItem}
+          width={600}
+          footer={false}
+        >
+          <div style={{ padding: '0 0' }}>
+            <Col style={{ width: '100%' }}>
+              <Row justify="center" 
+              style={{ display: "flex", justifyContent: "center", marginTop: "1em" }}>
+                <Col style={{ width: '100%' }}>
+                  <Form
+                    name="create_auction_form"
+                    className="signup-form"
+                    initialValues={{ remember: true }}
+                    onFinish={editItem}
+                    layout='vertical'
+                    size='middle'
+                    style={{width:'540px'}}
+                    >
+                    <Form.Item
+                        name="itemName"
+                        rules={[{ required: true, message: 'Hãy nhập tên vật phẩm' }]}
+                        label="Tên vật phẩm"
+                        initialValue={itemEdit.name}
+                    >
+                        <Input
+                        placeholder="Tên vật phẩm"
+                        className='el-input'
+                        size="large"
+                        />
+                    </Form.Item>
+                    <Form.Item
+                        name="priceFrom"
+                        label="Giá khởi điểm"
+                        initialValue={itemEdit.starting_price}
+                        rules={[{ required: true, message: 'Nhập giá khởi điểm' }]}
+                    >
+                        <InputNumber
+                        placeholder="Giá khởi điểm"
+                        className='el-input'
+                        size="large"
+                        controls={false}
+                        style={{width:'540px'}}
+                        />
+                    </Form.Item>
+                    <Form.Item
+                        name="branch"
+                        label="Thương hiệu"
+                        initialValue={itemEdit.brand_id}
+                        rules={[{ required: true, message: 'Hãy nhập thương hiệu' }]}
+                    >
+                        <Cascader 
+                        size="large" 
+                        options={listBrand} 
+                        placeholder="Chọn thương hiệu"
+                        dropdownMenuColumnStyle={{width:'520px', height:'42px', fontSize:'17px'}}
+                        />
+                    </Form.Item>
+                    <Form.Item
+                        name="series"
+                        label="Series sản phẩm"
+                        initialValue={itemEdit.series}
+                    >
+                        <Input
+                        placeholder="Series sản phẩm"
+                        className='el-input'
+                        size="large"
+                        />
+                    </Form.Item>
+
+                    <Form.Item
+                        name="description"
+                        label="Mô tả saen phẩm"
+                        rules={[{ required: true, message: 'Hãy nhập mô tả sản phẩm' }]}
+                        initialValue={itemEdit.description}
+                    >
+                        <TextArea
+                        placeholder="Series sản phẩm"
+                        className='el-input'
+                        size="large"
+                        />
+                    </Form.Item>
+
+                    <Form.Item
+                        name="images"
+                        label="Ảnh"
+                    >
+                        <ImgCrop rotate>
+                        <Upload
+                            customRequest={upfile}
+                            listType="picture-card"
+                            fileList={fileList}
+                            onChange={onChangeImg}
+                        >
+                            {fileList.length < 5 && '+ Upload'}
+                        </Upload>
+                        </ImgCrop>
+                    </Form.Item>
+
+                    <Form.Item style={{marginTop:'20px'}}>
+                        <Row>
+                            <button className="btn-bid-cancel" onClick={hideEditItem}>Hủy</button>
+                            <button className="btn-bid" isLoading={isLoading}>Cập nhật</button>
+                        </Row>
+                    </Form.Item>
                   </Form>
                 </Col>
               </Row>
@@ -864,7 +1149,7 @@ function AuctionDetail() {
               <li tabIndex={-1} className='el-dropdown-menu__item text-drop-nft' style={{ fontSize: '16px' }} onClick={showEditAuction}>
                 <span>Sửa đấu giá</span>
               </li>
-              <li tabIndex={-1} className='el-dropdown-menu__item text-drop-nft' style={{ fontSize: '16px' }} onClick={showEditAuction}>
+              <li tabIndex={-1} className='el-dropdown-menu__item text-drop-nft' style={{ fontSize: '16px' }} onClick={showEditItem}>
                 <span>Sửa vật phẩm</span>
               </li>
               <li tabIndex={-1} className='el-dropdown-menu__item text-drop-nft' style={{ fontSize: '16px' }} onClick={confirmDeleteAuction}>

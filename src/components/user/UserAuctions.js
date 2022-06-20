@@ -139,7 +139,7 @@ function UserAuctions() {
 
                     <Form.Item style={{marginTop:'20px'}}>
                         <Row>
-                            <div className="btn-action btn-cancel">Hủy</div>
+                            <button className="btn-action btn-cancel">Hủy</button>
                             <button className="btn-save btn-action " isLoading={isLoading}>Tạo mới</button>
                         </Row>
                     </Form.Item>
