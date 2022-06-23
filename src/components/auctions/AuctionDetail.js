@@ -65,6 +65,7 @@ function AuctionDetail() {
   const [totalComments, setTotalComment] = useState();
   const userId = useSelector((state) => state.auth.userId);
   const avatar = useSelector((state) => state.auth.avatar);
+  const isLogin = useSelector((state) => state.auth.isLoggedIn);
   const [listBid, setListBid] = useState([]);
   const [yourPrice, setYourBid] = useState();
   const [sellingInfo, setSellingInfo] = useState();
@@ -171,7 +172,9 @@ function AuctionDetail() {
         setItem(item);
         setSeller(sellerRes);
         setMaxBid(maxBid);
-        console.log(seller)
+        if (isLogin) {
+          getItemInfo(item.item_id)
+        }
       })
   }
 
@@ -192,15 +195,13 @@ function AuctionDetail() {
       })
   }
 
-  const getItemInfo = () => {
-    const itemId = item.item_id;
+  const getItemInfo = (itemId) => {
     apis.item
         .infoItem(itemId)
         .then(res => {
           var data = res.data;
           if (data.code === 1000) {
             setItemEdit(data.data)
-            console.log(itemEdit)
           }
           if (data.code === 1004) {
             message.error("BẠN CẦN ĐĂNG NHẬP")
@@ -238,7 +239,6 @@ function AuctionDetail() {
 
   const showEditItem = () => {
     setMenuDisplay(false);
-    getItemInfo()
     setPopUpEditItem(true)
   }
 
@@ -476,7 +476,7 @@ function AuctionDetail() {
               hideEditAuction()
             }
             else if (data.code === 1001) {
-              message.error("NGÀY BẮT ĐẦU PHẢI SAU NGÀY HIỆN TẠI 1 NGÀY.")
+              message.error("LỖI DỮ LIỆU")
             }
             else if (data.code === 1004) {
               message.error("VUI LÒNG ĐĂNG NHẬP.")
@@ -528,8 +528,13 @@ function AuctionDetail() {
                 console.log(res.data)
                 var data = res.data
                 if (data.code === 1000) {
-                    message.success("Bạn đã sửa vật phẩm thành công")
-                    auctionDetail()
+                  message.success("Bạn đã sửa vật phẩm thành công")
+                  auctionDetail()
+                }
+                else if (data.code === 1005) {
+                  message.error("Không thể chỉnh sửa")
+                } else {
+                  message.error(data.message)
                 }
             })
             .catch(e =>{
@@ -705,9 +710,15 @@ function AuctionDetail() {
                         <span>Đấu Giá</span>
                       </button>
                       :
-                      <button className="el-button-custom" disabled={true}>
-                        <span>Không bán</span>
-                      </button>
+                      auction.statusId === 2 
+                        ?
+                        <button className="el-button-custom" disabled>
+                          <span>Đấu giá sắp diễn ra</span>
+                        </button>
+                        :
+                        <button className="el-button-custom" disabled={true}>
+                          <span>Không bán</span>
+                        </button>
                 }
 
               </div>

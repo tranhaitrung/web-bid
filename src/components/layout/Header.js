@@ -46,8 +46,15 @@ function Header() {
           setTotalNotify(res.data.data.total_not_read)
           var arrTmp = []
           for (var i = 0; i < notifies.length; i++) {
+            const lable =  notifies[i].title;
+            const reason = notifies[i].reason;
               var noti = {
-                label: notifies[i].reason,
+                label: 
+                <div>
+                  <span><b>{'[TỪ CHỐI ĐẤU GIÁ] '}</b>{lable}</span>
+                  <br/>
+                  <span>{reason}</span>
+                </div>,
                 key: notifies[i].type
               }
               arrTmp.push(noti)

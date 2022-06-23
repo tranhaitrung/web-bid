@@ -14,8 +14,9 @@ export default function ListAuction() {
     const [totalAuction, setTotalAuction] = useState();
     const [listCategory, setListCategory] = useState();
     const [paramSearch, setParamSearch] = useState('');
-    const [paramStatus, setParamStatus] = useState('');
+    const [paramStatus, setParamStatus] = useState(0);
     const [paramCategory, setParamCategory] = useState('');
+    const [pageSize, setPageSize] = useState(12);
 
 
     const optionAuctionStatus = [
@@ -38,10 +39,6 @@ export default function ListAuction() {
         {
             value: '4',
             label: 'Đang chờ duyệt',
-        },
-        {
-            value: '5',
-            label: 'Đã bị từ chối',
         },
         {
             value: '6',
@@ -69,7 +66,19 @@ export default function ListAuction() {
 
     function onChangePage(value) {
         apis.auction
-        .listAuction(paramStatus,value,8, '', '', paramCategory)
+        .listAuction(paramStatus,value,pageSize, '', '', paramCategory)
+        .then((res) => {
+            var data = res.data.data;
+            setListAuction(data.auctions);
+            setTotalAuction(data.total);
+        })
+    }
+
+
+    function onChangePageSize(value) {
+        setPageSize(value)
+        apis.auction
+        .listAuction(paramStatus,0,value, '', '', paramCategory)
         .then((res) => {
             var data = res.data.data;
             setListAuction(data.auctions);
@@ -81,7 +90,7 @@ export default function ListAuction() {
         statusId = (statusId === undefined || statusId === null || statusId === '') ? 0 : statusId
         categoryId = (categoryId === undefined || categoryId === null) ? '' :categoryId
         apis.auction
-            .listAuction(statusId,1,8, '', '', categoryId)
+            .listAuction(statusId,0,pageSize, '', '', categoryId)
             .then((res) => {
                 var data = res.data.data;
                 setListAuction(data.auctions);
@@ -91,7 +100,7 @@ export default function ListAuction() {
 
     useEffect(() => {
         apis.auction
-            .listAuction(0,1,8, '', '', '')
+            .listAuction(0,0,pageSize, '', '', '')
             .then((res) => {
                 var data = res.data.data;
                 setListAuction(data.auctions);
@@ -181,8 +190,8 @@ export default function ListAuction() {
                     <Pagination
                     showSizeChanger
                     onChange={onChangePage}
-                    onShowSizeChange={onChangePage}
-                    defaultPageSize={12}
+                    onShowSizeChange={onChangePageSize}
+                    defaultPageSize={pageSize}
                     defaultCurrent={1}
                     total={totalAuction}              
                     pageSizeOptions={[12, 24, 48, 56]}

@@ -1,9 +1,10 @@
 import { Row, Col, Input, Cascader, Select, Pagination, Empty, message  } from "antd";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import AuctionComponent from "../home/components/AuctionComponent";
 import { SearchOutlined } from '@ant-design/icons';
 import apis from "../../redux/apis";
-import { useHistory } from "react-router";
+import { useSelector, useDispatch } from "react-redux";
+import { useHistory } from "react-router-dom";
 
 import './Filter.css';
 import './UserAuction.css';
@@ -35,26 +36,29 @@ const optionAuctionStatus = [
     },
   ];
 
-class UserAuction extends React.Component {
+function UserAuction() {
 
-    constructor(props){
-        super(props);
-        this.state= {
-            tabActive: 'MINE'
-        };
-        this.initData();
-    }
-
-    activeStyle = 'tab-item nft-header6 cursor text-desc tab-active';
-    inactiveStyle = 'tab-item nft-header6 cursor text-desc';
+    const [tabActive, setTabActive] = useState('MINE');
+    const [listAuction, setListAuction] = useState([]);
+    const [totalAuction, setTotalAuction] = useState();
+    const [listCategory, setListCategory] = useState([]);
+    const userId = useSelector((state) => state.auth.userId);
+    const avatar = useSelector((state) => state.auth.avatar);
+    const name = useSelector((state) => state.auth.name);
+    const activeStyle = 'tab-item nft-header6 cursor text-desc tab-active';
+    const inactiveStyle = 'tab-item nft-header6 cursor text-desc';
       
-    onChange(value) {
+    function onChange(value) {
     console.log(value);
     }
 
-    initData() {
+    useEffect(() => {
+        initData()
+      }, [])
 
-        this.listAuctionOfUser();
+    const initData = () => {
+
+        listAuctionOfUser();
         
         apis.categories
             .listCategory()
@@ -69,23 +73,19 @@ class UserAuction extends React.Component {
                     cates.push(tmp);
                     
                 }
-                this.setState({
-                    listCategory: cates
-                });
+                setListCategory(cates)
             })
     }
 
-    listAuctionOfUser = () => {
-        this.setState({tabActive:'MINE'});
+    const listAuctionOfUser = () => {
+        setTabActive('MINE')
         apis.auction
             .listAcutionByUser(0,1,12)
             .then((res) => {
                 let data = res.data.data;
                 if (res.data.code === 1000) {
-                    this.setState({
-                        listAuction: data.auctions,
-                        totalAuction: data.total
-                    })
+                    setListAuction(data.auctions)
+                    setTotalAuction(data.total)
                 } 
                 else if (res.data.code === 1004) {
                     message.error("Bạn cần đăng nhập")
@@ -94,8 +94,8 @@ class UserAuction extends React.Component {
             })
     }
 
-    listAcutionUserLiked = () => {
-        this.setState({tabActive:'LIKE'});
+    const listAcutionUserLiked = () => {
+        setTabActive('LIKE')
 
         apis.auction
             .listAuctionUserLiked(1,12)
@@ -103,10 +103,8 @@ class UserAuction extends React.Component {
                 let data = res.data.data;
                 
                 if (res.data.code === 1000) {
-                    this.setState({
-                        listAuction: data.auctions,
-                        totalAuction: data.total
-                    })
+                    setListAuction(data.auctions)
+                    setTotalAuction(data.total)
                 } 
                 else if (res.data.code === 1004) {
                     message.error("Bạn cần đăng nhập")
@@ -116,7 +114,6 @@ class UserAuction extends React.Component {
 
 
 
-    render(){
         return(
         <Row justify='center'>
             <Col style={{width:'1200px'}}>
@@ -136,7 +133,7 @@ class UserAuction extends React.Component {
                                 <div className="wrap-media">
                                     <div className="content-media">
                                         <img 
-                                        src="https://s3.ap-southeast-1.amazonaws.com/cleverme-production/blockchain/AVATAR/AVATAR_cake_584494726_1650685683493.jpg" 
+                                        src={avatar}
                                         alt=""
                                         className="d-block" />
                                     </div>
@@ -147,7 +144,7 @@ class UserAuction extends React.Component {
                         </div>
                         <Row justify="center">
                             <div>
-                                <span className="text-bold600 nft-header3">Trần Hải Trung</span>
+                                <span className="text-bold600 nft-header3">{name}</span>
                             </div>
                         </Row>
                         
@@ -155,14 +152,14 @@ class UserAuction extends React.Component {
                 </Row>
 
                 <Row className="tabs" style={{width:'100%', marginBottom:"40px"}} justify='center'>
-                    <div className={this.state.tabActive ==='MINE' ? this.activeStyle : this.inactiveStyle}>
+                    <div className={tabActive ==='MINE' ? activeStyle : inactiveStyle}>
                         <span
-                            onClick={this.listAuctionOfUser}
+                            onClick={listAuctionOfUser}
                         >Đấu giá của tôi</span>
                     </div>
-                    <div className={this.state.tabActive ==='LIKE' ? this.activeStyle : this.inactiveStyle}>
+                    <div className={tabActive ==='LIKE' ? activeStyle : inactiveStyle}>
                         <span
-                            onClick={this.listAcutionUserLiked}
+                            onClick={listAcutionUserLiked}
                         >Đấu giá đã thích</span>
                     </div>
                 </Row>
@@ -181,7 +178,7 @@ class UserAuction extends React.Component {
                     <Cascader 
                     size="large" 
                     options={optionAuctionStatus} 
-                    onChange={this.onChange} 
+                    onChange={onChange} 
                     placeholder="Trạng thái" 
                     style={{ 
                         marginRight: '20px',
@@ -192,8 +189,8 @@ class UserAuction extends React.Component {
 
                     <Cascader 
                     size="large" 
-                    options={this.state.listCategory} 
-                    onChange={this.onChange} 
+                    options={listCategory} 
+                    onChange={onChange} 
                     placeholder="Danh mục" 
                     style={{borderRadius:'8px'}}
                     dropdownMenuColumnStyle= {{width: "170px"}}
@@ -204,9 +201,9 @@ class UserAuction extends React.Component {
                 
                 <Row style={{width:'1200px'}}>
                     {
-                        this.state.totalAuction > 0 
+                        totalAuction > 0 
                         ?
-                        this.state.listAuction?.map((auction) => (
+                        listAuction?.map((auction) => (
                             <AuctionComponent auction={auction}></AuctionComponent>
                         ))
                         :
@@ -223,7 +220,7 @@ class UserAuction extends React.Component {
                     onChange={(page, limit)=> {console.log(page+","+limit)}}
                     defaultCurrent={1}
                     pageSizeOptions={[12,24,48,96]}
-                    total={this.state.totalAuction}
+                    total={totalAuction}
                     defaultPageSize={12}
                     
                     />
@@ -231,7 +228,6 @@ class UserAuction extends React.Component {
             </Col>
         </Row>
         );
-    }
 }
 
 export default UserAuction;

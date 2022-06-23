@@ -220,10 +220,34 @@ function AuctionComponent(props) {
                         </Link>
                     </Row>
                     <Row className="nft-body-small price" align='middle' style={{height:"55px"}}>
+                      {
+                        statusId === 4 
+                        ?
+                        <div>
+                            <span className="text-desc">Đấu giá đang chờ duyệt</span>
+                            {/* <span className="text-price">Nguyễn Văn An</span> */}
+                        </div>
+                        :
+                        statusId === 6 
+                        ?
+                        <div>
+                            <span className="text-desc">Đấu giá đã bán thành công</span>
+                            {/* <span className="text-price">Nguyễn Văn An</span> */}
+                        </div>
+                        :
+                        statusId === 3 
+                        ?
                         <div>
                             <span className="text-desc">Đấu giá đã kết thúc</span>
                             {/* <span className="text-price">Nguyễn Văn An</span> */}
                         </div>
+                        :
+                        <div>
+                            <span className="text-desc">Đấu giá đã bị từ chối</span>
+                            {/* <span className="text-price">Nguyễn Văn An</span> */}
+                        </div>
+                        
+                      }
                     </Row>
 
                     <div className="line"></div>
