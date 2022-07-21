@@ -85,7 +85,7 @@ function Header() {
           key: '1',
         },
         {
-          label: <Link to={`/login`} onClick={logout}>Đăng xuất</Link>,
+          label: <Link onClick={logout}>Đăng xuất</Link>,
           key: '3',
         },
       ]}

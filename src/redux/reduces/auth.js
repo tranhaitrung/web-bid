@@ -1,4 +1,4 @@
-import { LOGIN, LOGIN_SUCCESS, LOGIN_FAILED, UPDATE_ACCOUNT, UPDATE_ACCOUNT_SUCCESS, UPDATE_ACCOUNT_FAILED, CHANGE_PASS, CHANGE_PASS_SUCCESS, CHANGE_PASS_FAILED, LOGOUT } from "../constants/ActionType";
+import { LOGIN, LOGIN_SUCCESS, LOGIN_FAILED, UPDATE_ACCOUNT, UPDATE_ACCOUNT_SUCCESS, UPDATE_ACCOUNT_FAILED, CHANGE_PASS, CHANGE_PASS_SUCCESS, CHANGE_PASS_FAILED, LOGOUT, LOGIN_END } from "../constants/ActionType";
 var intialState = {
   isLoading: false,
   isLoggedIn: false,
@@ -73,6 +73,11 @@ var authReducer = (state = intialState, action) => {
       return {
         ...state,
         isLoading: true,
+      };
+    case LOGIN_END:
+      return {
+        ...state,
+        isLoading: false,
       };
     
     default:

@@ -2,7 +2,7 @@ import apis from "../apis/index";
 import { notification, message } from "antd";
 import '../constants/ErrorCode';
 import { LOGIN_FAIL_1001, LOGIN, LOGIN_FAIL_1002 } from "../constants/ErrorCode";
-import {LOGIN_SUCCESS, UPDATE_ACCOUNT, UPDATE_ACCOUNT_SUCCESS, UPDATE_ACCOUNT_FAILED, CHANGE_PASS, CHANGE_PASS_SUCCESS, CHANGE_PASS_FAILED, LOGIN_FAILED, LOGOUT} from "../constants/ActionType";
+import {LOGIN_SUCCESS, UPDATE_ACCOUNT, UPDATE_ACCOUNT_SUCCESS, UPDATE_ACCOUNT_FAILED, CHANGE_PASS, CHANGE_PASS_SUCCESS, CHANGE_PASS_FAILED, LOGIN_FAILED, LOGOUT, LOGIN_END} from "../constants/ActionType";
 
 // const redirectPage = (permission, history) => {
 //     permission === "ROLE_ADMIN"
@@ -54,6 +54,8 @@ import {LOGIN_SUCCESS, UPDATE_ACCOUNT, UPDATE_ACCOUNT_SUCCESS, UPDATE_ACCOUNT_FA
             localStorage.setItem("name", data.user.name);
             message.success('Đăng nhập thành công');
             history.push("");
+            window.location.replace("");
+      
         } else if (res.data.code === LOGIN_FAIL_1002) {
             dispatch({
               type: LOGIN_FAILED,
@@ -84,12 +86,11 @@ import {LOGIN_SUCCESS, UPDATE_ACCOUNT, UPDATE_ACCOUNT_SUCCESS, UPDATE_ACCOUNT_FA
         // redirectPage(permission, history);
       })
       .catch((error) => {
-    
-        notification.error({
-          message: "Login Failed",
-          description: "Username or Password is incorrect",
-          duration: 2,
-        });
+        message.error('Email hoặc Mật khẩu không đúng');
+      });
+
+      dispatch({
+        type: LOGIN_END,
       });
   };
 
@@ -205,6 +206,7 @@ import {LOGIN_SUCCESS, UPDATE_ACCOUNT, UPDATE_ACCOUNT_SUCCESS, UPDATE_ACCOUNT_FA
       localStorage.removeItem("address")
       localStorage.removeItem("name")
       history.push("/login")
+      window.location.replace("/login");
     })
   }
 
